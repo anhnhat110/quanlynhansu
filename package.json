@@ -1,0 +1,41 @@
+{
+  "name": "quanlynhansuquocte",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "antd": "^5.24.5",
+    "axios": "^1.8.4",
+    "browser-image-compression": "^2.0.2",
+    "cors": "^2.8.5",
+    "file-saver": "^2.0.5",
+    "lucide-react": "^0.482.0",
+    "moment": "^2.30.1",
+    "nanoid": "^5.1.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router": "^7.3.0",
+    "react-router-dom": "^7.3.0",
+    "recharts": "^2.15.1",
+    "tailwindcss": "^4.0.15",
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^18.2.33",
+    "@types/react-dom": "^18.2.11",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "vite": "^6.2.0"
+  }
+}
