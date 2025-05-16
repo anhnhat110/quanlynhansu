@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = `${import.meta.env.REACT_APP_API_URL}/users`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/users`;
 
 const userService = {
   createUser: async (userData) => {
