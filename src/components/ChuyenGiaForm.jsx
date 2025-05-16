@@ -19,7 +19,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
   const [fileList, setFileList] = useState([]);
   const [hoChieuBase64, setHoChieuBase64] = useState("");
 
-  const generateMaCG = () => "CG-" + uuidv4().slice(0, 8).toUpperCase();
+  const generateMaCG = () => "CG-" + uuidv4().slice(0, 4).toUpperCase();
 
   useEffect(() => {
     const fetchChuyenGias = async () => {

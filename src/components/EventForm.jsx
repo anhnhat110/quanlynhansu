@@ -24,13 +24,13 @@ const EventForm = ({ event, onSuccess }) => {
     "Nhân viên",
   ];
 
-  const generateMaSK = () => "SK-" + uuidv4().slice(0, 8).toUpperCase();
+  const generateMaSK = () => "SK-" + uuidv4().slice(0, 4).toUpperCase();
 
   // Fetch chuyenGiaOptions from the API and populate form after data is loaded
   useEffect(() => {
     const fetchChuyenGias = async () => {
       try {
-        const res = await fetch("http://127.0.0.01:3005/api/v1/chuyengias?fields=hoVaTen", {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chuyengias?fields=hoVaTen`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
