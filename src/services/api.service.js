@@ -1,22 +1,6 @@
-import axios from 'axios';
-import  apiConfig from '../config/api.config';
+import  apiClient from '../config/api.config';
 
-// Tạo instance axios với cấu hình mặc định
-const apiClient = axios.create({
-    baseURL: apiConfig.BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
 
-// Interceptor để xử lý lỗi
-apiClient.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        // Xử lý lỗi ở đây (ví dụ: hiển thị thông báo lỗi)
-        return Promise.reject(error);
-    }
-);
 
 export const apiService = {
     // GET request

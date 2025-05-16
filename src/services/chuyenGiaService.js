@@ -1,4 +1,4 @@
-import apiConfig from '../config/api.config';
+import apiClient from '../config/api.config';
 
 export const chuyenGiaService = {
     // Lấy danh sách chuyên gia
@@ -16,7 +16,7 @@ export const chuyenGiaService = {
         // Log URL và các query params trước khi gọi API
         console.log(`Calling GET /chuyengias with params: ${queryParams.toString()}`);
     
-        return apiConfig.get('/chuyengias', { params: queryParams })
+        return apiClient.get('/chuyengias', { params: queryParams })
           .then(response => {
             // Log response sau khi nhận được từ API
             console.log('API response:', response);
@@ -31,23 +31,23 @@ export const chuyenGiaService = {
 
     // Lấy chi tiết một chuyên gia
     getChuyenGiaById: (id) => {
-        return apiConfig.get(`/chuyengias/${id}`);
+        return apiClient.get(`/chuyengias/${id}`);
     },
 
     // Tạo chuyên gia mới
     createChuyenGia: (data) => {
-        return apiConfig.post('/chuyengias', data);
+        return apiClient.post('/chuyengias', data);
     },
 
     // Cập nhật chuyên gia
     updateChuyenGia: (id, data) => {
-        return apiConfig.patch(`/chuyengias/${id}`, data);
+        return apiClient.patch(`/chuyengias/${id}`, data);
     },
 
     // Xóa chuyên gia
     deleteChuyenGia: async (id) => {
         try {
-            const response = await apiConfig.delete(`/chuyengias/${id}`);
+            const response = await apiClient.delete(`/chuyengias/${id}`);
             return response;
         } catch (error) {
             console.error('Delete request failed:', {
@@ -60,17 +60,17 @@ export const chuyenGiaService = {
         }
     },// Lấy danh sách trường đơn vị duy nhất
     getTruongDonVis: () => {
-      return apiConfig.get('/chuyengias', { params: { fields: 'truongDonVi' } });
+      return apiClient.get('/chuyengias', { params: { fields: 'truongDonVi' } });
     },
     
     // Lấy danh sách chức danh duy nhất
     getChucDanhs: () => {
-      return apiConfig.get('/chuyengias', { params: { fields: 'chucDanh' } });
+      return apiClient.get('/chuyengias', { params: { fields: 'chucDanh' } });
     },
     
     // Lấy danh sách quốc gia duy nhất
     getQuocGias: () => {
-      return apiConfig.get('/chuyengias', { params: { fields: 'quocGia' } });
+      return apiClient.get('/chuyengias', { params: { fields: 'quocGia' } });
     }
     
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const apiConfig = axios.create({
-    baseURL: 'http://127.0.0.1:3005/api/v1',
+const apiClient = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
         'Content-Type': 'application/json'
     },
@@ -9,7 +9,7 @@ const apiConfig = axios.create({
 });
 
 // Thêm interceptor để xử lý response
-apiConfig.interceptors.response.use(
+apiClient.interceptors.response.use(
     (response) => {
         return response.data;
     },
@@ -20,7 +20,7 @@ apiConfig.interceptors.response.use(
 );
 
 // Thêm interceptor để xử lý request
-apiConfig.interceptors.request.use(
+apiClient.interceptors.request.use(
     (config) => {
         // Đảm bảo headers luôn được gửi đi
         config.headers = {
@@ -34,4 +34,4 @@ apiConfig.interceptors.request.use(
     }
 );
 
-export default apiConfig; 
+export default apiClient; 

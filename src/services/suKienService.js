@@ -1,4 +1,4 @@
-import apiConfig from '../config/api.config';
+import apiClient from '../config/api.config';
 
 export const suKienService = {
     // Lấy danh sách sự kiện
@@ -16,7 +16,7 @@ export const suKienService = {
         // Log URL và các query params trước khi gọi API
         console.log(`Calling GET /sukiens with params: ${queryParams.toString()}`);
 
-        return apiConfig.get('/sukiens', { params: queryParams })
+        return apiClient.get('/sukiens', { params: queryParams })
             .then(response => {
                 // Log response sau khi nhận được từ API
                 console.log('API response:', response);
@@ -32,27 +32,27 @@ export const suKienService = {
     // Lấy chi tiết một sự kiện
     getSuKienById: (id) => {
         console.log(`Calling GET /sukiens/${id}`);
-        return apiConfig.get(`/sukiens/${id}`);
+        return apiClient.get(`/sukiens/${id}`);
     },
 
     // Tạo sự kiện mới
     createSuKien: (data) => {
         console.log('Calling POST /sukiens with data:', data);
-        return apiConfig.post('/sukiens', data);
+        return apiClient.post('/sukiens', data);
     },
 
     // Cập nhật sự kiện
     updateSuKien: (id, data) => {
         console.log(`Calling PATCH /sukiens/${id} with data:`, data);
-        return apiConfig.patch(`/sukiens/${id}`, data);
+        return apiClient.patch(`/sukiens/${id}`, data);
     },
 
     // Xóa sự kiện
     deleteSuKien: async (id) => {
         try {
             console.log(`Calling DELETE /sukiens/${id}`);
-            console.log('Full URL:', `${apiConfig.defaults.baseURL}/sukiens/${id}`);
-            const response = await apiConfig.delete(`/sukiens/${id}`);
+            console.log('Full URL:', `${apiClient.defaults.baseURL}/sukiens/${id}`);
+            const response = await apiClient.delete(`/sukiens/${id}`);
             console.log('Delete response:', response);
             return response;
         } catch (error) {
@@ -68,7 +68,7 @@ export const suKienService = {
     // Lấy 5 sự kiện gần nhất
     get5LatestSuKien: () => {
         console.log('Calling GET /sukiens?sort=createdAt');
-        return apiConfig.get('/sukiens?sort=createdAt')
+        return apiClient.get('/sukiens?sort=createdAt')
             .then(response => {
                 console.log('API response:', response);
                 return response;
@@ -79,16 +79,16 @@ export const suKienService = {
             });
     },
     getMucDichMucDichs: () => {
-        return apiConfig.get('/sukiens', { params: { fields: 'mucDich' } });
+        return apiClient.get('/sukiens', { params: { fields: 'mucDich' } });
       },
       
       // Lấy danh sách chức danh duy nhất
       getChuyenGias: () => {
-        return apiConfig.get('/sukiens', { params: { fields: 'chuyenGia' } });
+        return apiClient.get('/sukiens', { params: { fields: 'chuyenGia' } });
       },
       
       // Lấy danh sách quốc gia duy nhất
       getThanhPhans: () => {
-        return apiConfig.get('/sukiens', { params: { fields: 'thanhPhan' } });
+        return apiClient.get('/sukiens', { params: { fields: 'thanhPhan' } });
       }
 }; 
