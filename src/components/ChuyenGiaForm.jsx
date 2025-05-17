@@ -67,9 +67,23 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       }
     } else {
       form.resetFields();
-      form.setFieldValue("maCG", generateMaCG());
+      form.setFieldsValue({
+        maCG: generateMaCG(),
+        hoVaTen: "",
+        email: "",
+        gioiTinh: "",
+        quocGia: "",
+        truongDonVi: "",
+        chucDanh: "",
+        chucVu: "",
+        chuyenNganh: "",
+        ghiChu: "",
+      });
       setFileList([]);
       setHoChieuBase64("");
+      setCustomChucDanh("");
+      setCustomQuocGia("");
+      setCustomTruongDonVi("");
     }
   }, [chuyengia, form, chucDanhOptions, quocGiaOptions, truongDonViOptions]);
 
@@ -389,9 +403,28 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
         <Button
           type="default"
           htmlType="button"
-          onClick={() => form.resetFields()}
+          onClick={() => {
+            form.resetFields();
+            form.setFieldsValue({
+              maCG: generateMaCG(),
+              hoVaTen: "",
+              email: "",
+              gioiTinh: "",
+              quocGia: "",
+              truongDonVi: "",
+              chucDanh: "",
+              chucVu: "",
+              chuyenNganh: "",
+              ghiChu: "",
+            });
+            setFileList([]);
+            setHoChieuBase64("");
+            setCustomChucDanh("");
+            setCustomQuocGia("");
+            setCustomTruongDonVi("");
+          }}
         >
-          Hủy
+          Nhập Lại
         </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
           {chuyengia?.maCG ? "Cập nhật" : "Lưu"}

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Table, Button, Space, Select, Input, Modal } from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import ChuyenGiaForm from "../components/ChuyenGiaForm";
 import DeleteChuyenGiaModal from "../components/DeleteChuyenGiaModal";
+import ChuyenGiaDetailModal from "../components/ChuyenGiaDetailModal";
 import { chuyenGiaService } from "../services/chuyenGiaService";
 
 const { Option } = Select;
@@ -10,34 +11,34 @@ const { Option } = Select;
 const ChuyenGiaManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [chuyenGiaList, setChuyenGiaList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingChuyenGia, setEditingChuyenGia] = useState(null);
   const [deletingChuyenGia, setDeletingChuyenGia] = useState(null);
+  const [viewingChuyenGia, setViewingChuyenGia] = useState(null);
   const [sortOrder, setSortOrder] = useState("lastest");
   const [searchTerm, setSearchTerm] = useState("");
-  const [isImageModalVisible, setIsImageModalVisible] = useState(false);
-  const [selectedImage, setSelectedImage] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // Current page (e.g., page=1)
-  const [pageSize, setPageSize] = useState(10); // Limit per page (e.g., limit=10)
-  const [totalRecords, setTotalRecords] = useState(0); // Total number of records
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchChuyenGiaList = async (page = 1, pageSize = 10, sortOrder = "", searchTerm = "") => {
     try {
       setLoading(true);
       const params = {
-        page, // Page number (e.g., 1, 2, 3...)
-        limit: pageSize, // Number of items per page (e.g., 10)
+        page,
+        limit: pageSize,
       };
 
-      if (sortOrder === "lastest") params.sort = "hoVaTen"; // Sort A-Z
-      if (sortOrder === "oldest") params.sort = "-hoVaTen"; // Sort Z-A
-      if (searchTerm) params.search = searchTerm; // Search term
+      if (sortOrder === "lastest") params.sort = "hoVaTen";
+      if (sortOrder === "oldest") params.sort = "-hoVaTen";
+      if (searchTerm) params.search = searchTerm;
 
       const response = await chuyenGiaService.getAllChuyenGia(params);
       const data = response?.data || {};
       const chuyenGias = Array.isArray(data.chuyenGias) ? data.chuyenGias : [];
-      const total = data.total || chuyenGias.length || 0; // Extract total from response
+      const total = data.total || chuyenGias.length || 0;
 
       setChuyenGiaList(chuyenGias);
       setTotalRecords(total);
@@ -51,19 +52,19 @@ const ChuyenGiaManagement = () => {
   };
 
   const handleSearch = () => {
-    setCurrentPage(1); // Reset to page 1 on search
+    setCurrentPage(1);
     fetchChuyenGiaList(1, pageSize, sortOrder, searchTerm);
   };
 
   const handleSortChange = (value) => {
     setSortOrder(value);
-    setCurrentPage(1); // Reset to page 1 on sort change
+    setCurrentPage(1);
     fetchChuyenGiaList(1, pageSize, value, searchTerm);
   };
 
   const handlePageChange = (page, pageSize) => {
-    setCurrentPage(page); // Update to new page (e.g., page=2)
-    setPageSize(pageSize); // Update limit per page (e.g., limit=20)
+    setCurrentPage(page);
+    setPageSize(pageSize);
     fetchChuyenGiaList(page, pageSize, sortOrder, searchTerm);
   };
 
@@ -76,17 +77,12 @@ const ChuyenGiaManagement = () => {
     setIsDeleteModalVisible(true);
   };
 
-  const handleImageClick = (hoChieu) => {
-    setSelectedImage(hoChieu);
-    setIsImageModalVisible(true);
+  const handleDetailClick = (record) => {
+    setViewingChuyenGia(record);
+    setIsDetailModalVisible(true);
   };
 
   const columns = [
-    {
-      title: "Mã CG",
-      dataIndex: "maCG",
-      key: "maCG",
-    },
     {
       title: "Họ và tên",
       dataIndex: "hoVaTen",
@@ -108,39 +104,9 @@ const ChuyenGiaManagement = () => {
       key: "quocGia",
     },
     {
-      title: "Hộ chiếu",
-      dataIndex: "hoChieu",
-      key: "hoChieu",
-      render: (hoChieu) => (
-        <div style={{ textAlign: "center" }}>
-          {hoChieu && hoChieu.startsWith("data:image") ? (
-            <img
-              src={hoChieu}
-              alt="Hộ chiếu"
-              style={{
-                maxWidth: "100px",
-                maxHeight: "100px",
-                objectFit: "contain",
-                cursor: "pointer",
-                imageRendering: "auto",
-              }}
-              onClick={() => handleImageClick(hoChieu)}
-            />
-          ) : (
-            "Không có ảnh"
-          )}
-        </div>
-      ),
-    },
-    {
       title: "Trường / Đơn vị",
       dataIndex: "truongDonVi",
       key: "truongDonVi",
-    },
-    {
-      title: "Chức danh",
-      dataIndex: "chucDanh",
-      key: "chucDanh",
     },
     {
       title: "Chức vụ",
@@ -148,22 +114,17 @@ const ChuyenGiaManagement = () => {
       key: "chucVu",
     },
     {
-      title: "Chuyên ngành",
-      dataIndex: "chuyenNganh",
-      key: "chuyenNganh",
-    },
-    {
-      title: "Ghi chú",
-      dataIndex: "ghiChu",
-      key: "ghiChu",
-    },
-    {
       title: "",
       key: "action",
-      width: 100,
+      width: 150,
       align: "center",
       render: (_, record) => (
         <Space>
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={() => handleDetailClick(record)}
+          />
           <Button
             type="text"
             icon={<EditOutlined />}
@@ -182,7 +143,6 @@ const ChuyenGiaManagement = () => {
       ),
     },
   ];
-  
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
@@ -227,8 +187,8 @@ const ChuyenGiaManagement = () => {
         className="shadow-sm"
         style={{ borderRadius: "8px", overflow: "hidden" }}
         pagination={{
-          current: currentPage, // Corresponds to page parameter
-          pageSize: pageSize, // Corresponds to limit parameter
+          current: currentPage,
+          pageSize: pageSize,
           total: totalRecords,
           onChange: handlePageChange,
           showSizeChanger: true,
@@ -270,21 +230,14 @@ const ChuyenGiaManagement = () => {
         }}
       />
 
-      <Modal
-        title="Xem ảnh hộ chiếu"
-        open={isImageModalVisible}
-        onCancel={() => setIsImageModalVisible(false)}
-        footer={null}
-        width={800}
-      >
-        {selectedImage && (
-          <img
-            src={selectedImage}
-            alt="Hộ chiếu phóng to"
-            style={{ width: "100%", height: "auto", imageRendering: "auto" }}
-          />
-        )}
-      </Modal>
+      <ChuyenGiaDetailModal
+        chuyenGia={viewingChuyenGia}
+        visible={isDetailModalVisible}
+        onCancel={() => {
+          setIsDetailModalVisible(false);
+          setViewingChuyenGia(null);
+        }}
+      />
     </div>
   );
 };

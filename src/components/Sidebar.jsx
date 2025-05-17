@@ -2,7 +2,9 @@ import { Menu } from 'antd';
 import { 
   TeamOutlined,
   CalendarOutlined,
-  DashboardOutlined
+  PieChartOutlined,
+  UserSwitchOutlined,
+  AuditOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../assets/images.png';
@@ -61,8 +63,18 @@ export default function Sidebar() {
             label: 'Quản lý sự kiện'
           },
           {
+            key: 'sinh-vien',
+            icon: <UserSwitchOutlined />,
+            label: 'Quản lý sinh viên'
+          },
+          {
+            key: 'danh-muc-doan',
+            icon: <AuditOutlined />,
+            label: 'Quản lý danh mục đoàn'
+          },
+          {
             key: 'dashboard',
-            icon: <DashboardOutlined />,
+            icon: <PieChartOutlined />,
             label: 'Quản lý dashboard',
             children: [
               {

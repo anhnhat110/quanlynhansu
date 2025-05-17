@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { BellOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
-import { Space, Badge, message } from 'antd';
+import { Space, Badge, message, Dropdown, Menu } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const [userName, setUserName] = useState('Loading...');
+  const navigate = useNavigate();
 
   const fetchUser = () => {
     try {
@@ -51,20 +53,29 @@ const Header = () => {
     }, 500);
   };
 
+  // Menu cho dropdown
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="account" onClick={() => navigate('/account')}>
+        Quản lý tài khoản
+      </Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Đăng xuất
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <header className="flex items-center justify-end bg-white px-8 py-4">
       <Space size={24} align="center">
-        
-        <Space align="center">
-          <UserOutlined style={{ fontSize: '20px', color: '#8c8c8c', cursor: 'pointer' }} />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{userName}</span>
-          </div>
-        </Space>
-        <LogoutOutlined 
-          style={{ fontSize: '20px', color: '#8c8c8c', cursor: 'pointer' }} 
-          onClick={handleLogout}
-        />
+        <Dropdown overlay={userMenu} trigger={['click']}>
+          <Space align="center" className="cursor-pointer">
+            <UserOutlined style={{ fontSize: '20px', color: '#8c8c8c' }} />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">{userName}</span>
+            </div>
+          </Space>
+        </Dropdown>
       </Space>
     </header>
   );

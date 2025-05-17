@@ -5,6 +5,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const { Option } = Select;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}/users`;
 
 const fieldMap = {
   "Họ và tên": "hoVaTen",
@@ -98,7 +99,7 @@ export default function ExportPage() {
           }
         });
 
-        const url = `http://127.0.0.1:3005/api/v1/${type}?${params.toString()}`;
+        const url = `${API_URL}/${type}?${params.toString()}`;
         const response = await axios.get(url);
         const resData = response.data.data;
         setData(isChuyenGia ? resData.chuyenGias : resData.suKiens);
@@ -119,7 +120,7 @@ export default function ExportPage() {
         setFilterValues({}); // ✅ Reset filter khi đổi chọn
   
         if (isChuyenGia) {
-          const res = await axios.get("http://127.0.0.1:3005/api/v1/chuyengias");
+          const res = await axios.get(`${API_URL}/chuyengias`);
           const data = res.data.data.chuyenGias;
           const unique = (arr, key) => [...new Set(arr.map(item => item[key]).filter(Boolean))];
   
@@ -131,7 +132,7 @@ export default function ExportPage() {
             thoiGian: []
           });
         } else if (selectedSK.length > 0) {
-          const res = await axios.get("http://127.0.0.1:3005/api/v1/sukiens");
+          const res = await axios.get(`${API_URL}/sukiens`);
           const data = res.data.data.suKiens;
           const unique = (arr, key) => [...new Set(arr.map(item => item[key]).filter(Boolean))];
   

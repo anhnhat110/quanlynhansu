@@ -23,7 +23,7 @@ const LoginPage = () => {
         navigate('/');
       }
     } catch (error) {
-      message.error(error.message || 'Đăng nhập thất bại!');
+      message.error(error.message || 'Kiểm tra lại email hoặc mật khẩu!');
       console.error('Lỗi đăng nhập:', error);
     } finally {
       setLoading(false);

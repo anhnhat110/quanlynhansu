@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Select, Input, Modal, Descriptions } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Space, Select, Input, Modal } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import EventForm from '../components/EventForm';
 import DeleteEventModal from '../components/DeleteEventModal';
+import EventDetailModal from '../components/EventDetailModal';
 import { suKienService } from '../services/suKienService';
 
 const { Option } = Select;
@@ -10,24 +11,26 @@ const { Option } = Select;
 const EventManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [deletingEvent, setDeletingEvent] = useState(null);
+  const [viewingEvent, setViewingEvent] = useState(null);
   const [sortOrder, setSortOrder] = useState('latest');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGuide, setSelectedGuide] = useState(null);
   const [isGuideModalVisible, setIsGuideModalVisible] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1); // New state for current page
-  const [pageSize, setPageSize] = useState(10); // New state for page size
-  const [totalRecords, setTotalRecords] = useState(0); // New state for total records
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const fetchEvents = async (page = 1, pageSize = 10, sortOrder = '', searchTerm = '') => {
     try {
       setLoading(true);
       const params = {
-        page, // Add page parameter
-        limit: pageSize, // Add limit parameter
+        page,
+        limit: pageSize,
       };
 
       if (sortOrder === 'latest') params.sort = '-thoiGianKetThuc';
@@ -36,10 +39,10 @@ const EventManagement = () => {
 
       const response = await suKienService.getAllSuKien(params);
       const eventData = response?.data?.suKiens || response?.suKiens || response?.data || response || [];
-      const total = response?.data?.total || response?.total || eventData.length || 0; // Adjust based on actual API response
+      const total = response?.data?.total || response?.total || eventData.length || 0;
 
       setEvents(Array.isArray(eventData) ? eventData : []);
-      setTotalRecords(total); // Set total records for pagination
+      setTotalRecords(total);
     } catch {
       setEvents([]);
       setTotalRecords(0);
@@ -49,13 +52,13 @@ const EventManagement = () => {
   };
 
   const handleSearch = () => {
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
     fetchEvents(1, pageSize, sortOrder, searchTerm);
   };
 
   const handleSortChange = (value) => {
     setSortOrder(value);
-    setCurrentPage(1); // Reset to first page on sort change
+    setCurrentPage(1);
     fetchEvents(1, pageSize, value, searchTerm);
   };
 
@@ -74,6 +77,11 @@ const EventManagement = () => {
     setIsDeleteModalVisible(true);
   };
 
+  const handleDetailClick = (record) => {
+    setViewingEvent(record);
+    setIsDetailModalVisible(true);
+  };
+
   const handleShowGuide = (record) => {
     const guide = record.guides?.[0];
     if (guide) {
@@ -83,11 +91,6 @@ const EventManagement = () => {
   };
 
   const columns = [
-    {
-      title: 'Mã SK',
-      dataIndex: 'maSK',
-      key: 'maSK',
-    },
     {
       title: 'Chuyên gia',
       key: 'chuyenGia',
@@ -99,11 +102,6 @@ const EventManagement = () => {
           </Button>
         ) : '—';
       },
-    },
-    {
-      title: 'Mục đích',
-      dataIndex: 'mucDich',
-      key: 'mucDich',
     },
     {
       title: 'Sự kiện',
@@ -130,29 +128,29 @@ const EventManagement = () => {
       key: 'thanhPhan',
     },
     {
-      title: 'Ghi chú',
-      dataIndex: 'ghiChu',
-      key: 'ghiChu',
-    },
-    {
       title: '',
       key: 'action',
-      width: 100,
+      width: 150,
       align: 'center',
       render: (_, record) => (
         <Space>
-          <Button 
-            type="text" 
-            icon={<EditOutlined />} 
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={() => handleDetailClick(record)}
+          />
+          <Button
+            type="text"
+            icon={<EditOutlined />}
             onClick={() => {
               setEditingEvent(record);
               setIsModalVisible(true);
             }}
           />
-          <Button 
-            type="text" 
+          <Button
+            type="text"
             danger
-            icon={<DeleteOutlined />} 
+            icon={<DeleteOutlined />}
             onClick={() => handleDeleteClick(record)}
           />
         </Space>
@@ -164,8 +162,8 @@ const EventManagement = () => {
     <div className="bg-white p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">Danh sách sự kiện</h1>
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
           icon={<PlusOutlined />}
           onClick={() => {
             setEditingEvent(null);
@@ -184,7 +182,7 @@ const EventManagement = () => {
           onChange={e => setSearchTerm(e.target.value)}
           onSearch={handleSearch}
         />
-        <Select 
+        <Select
           value={sortOrder}
           style={{ width: 200 }}
           placeholder="Sắp xếp"
@@ -195,8 +193,8 @@ const EventManagement = () => {
         </Select>
       </div>
 
-      <Table 
-        columns={columns} 
+      <Table
+        columns={columns}
         dataSource={events}
         loading={loading}
         rowKey="_id"
@@ -223,8 +221,8 @@ const EventManagement = () => {
         footer={null}
         width={1000}
       >
-        <EventForm 
-          event={editingEvent} 
+        <EventForm
+          event={editingEvent}
           onSuccess={() => {
             fetchEvents(currentPage, pageSize, sortOrder, searchTerm);
             setIsModalVisible(false);
@@ -243,6 +241,15 @@ const EventManagement = () => {
           setIsDeleteModalVisible(false);
           setDeletingEvent(null);
           fetchEvents(currentPage, pageSize, sortOrder, searchTerm);
+        }}
+      />
+
+      <EventDetailModal
+        event={viewingEvent}
+        visible={isDetailModalVisible}
+        onCancel={() => {
+          setIsDetailModalVisible(false);
+          setViewingEvent(null);
         }}
       />
 

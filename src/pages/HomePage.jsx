@@ -10,9 +10,27 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Cell,
 } from "recharts";
 
 const { Title } = Typography;
+
+// Color palette for bars
+const colors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28EFF'];
+
+// Define the path for a triangular bar
+const getPath = (x, y, width, height) => {
+  return `M${x},${y + height}C${x + width / 3},${y + height} ${x + width / 2},${y + height / 3}
+  ${x + width / 2}, ${y}
+  C${x + width / 2},${y + height / 3} ${x + (2 * width) / 3},${y + height} ${x + width}, ${y + height}
+  Z`;
+};
+
+// TriangleBar component for custom bar shape
+const TriangleBar = (props) => {
+  const { fill, x, y, width, height } = props;
+  return <path d={getPath(x, y, width, height)} stroke="none" fill={fill} />;
+};
 
 const HomePage = () => {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -20,28 +38,25 @@ const HomePage = () => {
   const [allExperts, setAllExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [topExpertsByEvent, setTopExpertsByEvent] = useState([]);
-  
 
   const fetchTopExpertsByEvent = async () => {
-  try {
-    const response = await apiClient.get("/sukiens/top-chuyengias");
-    const raw = response?.data?.topChuyenGias || [];
-    console.log("Top Experts by Event Data:", raw);
+    try {
+      const response = await apiClient.get("/sukiens/top-chuyengias");
+      const raw = response?.data?.topChuyenGias || [];
+      console.log("Top Experts by Event Data:", raw);
 
-    const formattedData = raw.map(item => ({
-      hoVaTen: item.chuyenGia || "Không xác định",
-      totalEvents: item.eventCount || 0
-    }));
+      const formattedData = raw.map((item) => ({
+        hoVaTen: item.chuyenGia || "Không xác định",
+        totalEvents: item.eventCount || 0,
+      }));
 
-    setTopExpertsByEvent(formattedData);
-    console.log("Dữ liệu biểu đồ:", formattedData);
-
-  } catch (error) {
-    console.error("Failed to fetch top experts by event:", error);
-    setTopExpertsByEvent([]);
-  }
-};
-
+      setTopExpertsByEvent(formattedData);
+      console.log("Dữ liệu biểu đồ:", formattedData);
+    } catch (error) {
+      console.error("Failed to fetch top experts by event:", error);
+      setTopExpertsByEvent([]);
+    }
+  };
 
   const fetchUpcomingEvents = async () => {
     try {
@@ -134,36 +149,69 @@ const HomePage = () => {
         Tổng quan
       </Title>
 
-      {/* Biểu đồ thanh - Top 5 trường có nhiều chuyên gia nhất */}
+      {/* Custom Shape Bar Chart - Top 5 Trường Có Nhiều Chuyên Gia Nhất */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
         <Title level={4} className="mb-4">
           Top 5 Trường Có Nhiều Chuyên Gia Nhất
         </Title>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={topTruongDonViData}>
+          <BarChart
+            data={topTruongDonViData}
+            margin={{
+              top: 20,
+              right: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis domain={[0, "auto"]} allowDecimals={false} />
             <Tooltip />
             <Legend />
-            <Bar dataKey="count" fill="#8884d8" name="Số lượng chuyên gia" />
+            <Bar
+              dataKey="count"
+              shape={<TriangleBar />}
+              name="Số lượng chuyên gia"
+              label={{ position: 'top' }}
+            >
+              {topTruongDonViData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-      {/* Biểu đồ thanh - Top 5 chuyên gia tham gia nhiều sự kiện nhất */}
-      {/* Biểu đồ chuyên gia tham gia nhiều sự kiện nhất */}
+
+      {/* Bar Chart - Top 5 Chuyên Gia Tham Gia Nhiều Sự Kiện Nhất */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
         <Title level={4} className="mb-4">
           Top 5 Chuyên Gia Tham Gia Nhiều Sự Kiện Nhất
         </Title>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart data={topExpertsByEvent}>
+          <BarChart
+            data={topExpertsByEvent}
+            margin={{
+              top: 20,
+              blue: 30,
+              left: 20,
+              bottom: 5,
+            }}
+          >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="hoVaTen" />
             <YAxis domain={[0, "auto"]} allowDecimals={false} />
             <Tooltip />
             <Legend />
-            <Bar dataKey="totalEvents" fill="#82ca9d" name="Số sự kiện" />
+            <Bar
+              dataKey="totalEvents"
+              name="Số sự kiện"
+              label={{ position: 'top' }}
+            >
+              {topExpertsByEvent.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

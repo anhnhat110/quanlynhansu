@@ -357,7 +357,7 @@ const EventForm = ({ event, onSuccess }) => {
             setCustomThanhPhan("");
           }}
         >
-          Hủy
+          Nhập lạilại
         </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
           {event?.maSK ? "Cập nhật" : "Lưu"}

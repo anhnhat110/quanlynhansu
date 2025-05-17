@@ -5,7 +5,7 @@ import { Layout } from 'antd';
 import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 import HomePage from "./pages/HomePage";
-import StaffList from './pages/ChuyenGiaManagement';
+import ChuyenGiaManagement from './pages/ChuyenGiaManagement';
 import EventManagement from './pages/EventManagement';
 import ExpertsByCountry from "./pages/ExpertsByCountry";
 import ExpertsByUnit from "./pages/ExpertsByUnit";
@@ -15,7 +15,9 @@ import LoginPage from "./pages/LoginPage";
 import CreateAccountPage from "./pages/CreateAccountPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-
+import StudentManagement from "./pages/StudentManagament";
+import DanhMucDoanManagement from "./pages/DanhMucDoanManegament";
+import Account from "./pages/Account";
 const { Content } = Layout;
 
 const App = () => {
@@ -54,8 +56,11 @@ const App = () => {
         <Content style={{ background: '#F0F2F5', padding: '24px' }}>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/chuyen-gia" element={<StaffList />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/chuyen-gia" element={<ChuyenGiaManagement />} />
             <Route path="/su-kien" element={<EventManagement />} />
+            <Route path="/sinh-vien" element={<StudentManagement />} />
+            <Route path="/danh-muc-doan" element={<DanhMucDoanManagement />} />
             <Route path="/expertsbyunit" element={<ExpertsByUnit />} />
             <Route path="/expertsbycountry" element={<ExpertsByCountry />} />
             <Route path="/expertsbypurpose" element={<ExpertsByPurpose />} />
