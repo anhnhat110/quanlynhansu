@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { Typography, Spin } from "antd";
-import apiConfig from "../config/api.config";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import apiClient from "../config/api.config";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const { Title } = Typography;
 
@@ -10,16 +19,41 @@ const HomePage = () => {
   const [recentExperts, setRecentExperts] = useState([]);
   const [allExperts, setAllExperts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [topExpertsByEvent, setTopExpertsByEvent] = useState([]);
+  
+
+  const fetchTopExpertsByEvent = async () => {
+  try {
+    const response = await apiClient.get("/sukiens/top-chuyengias");
+    const raw = response?.data?.topChuyenGias || [];
+    console.log("Top Experts by Event Data:", raw);
+
+    const formattedData = raw.map(item => ({
+      hoVaTen: item.chuyenGia || "Không xác định",
+      totalEvents: item.eventCount || 0
+    }));
+
+    setTopExpertsByEvent(formattedData);
+    console.log("Dữ liệu biểu đồ:", formattedData);
+
+  } catch (error) {
+    console.error("Failed to fetch top experts by event:", error);
+    setTopExpertsByEvent([]);
+  }
+};
+
 
   const fetchUpcomingEvents = async () => {
     try {
-      const response = await apiConfig.get("/sukiens?limit=5&sort=-thoiGianBatDau");
+      const response = await apiClient.get(
+        "/sukiens?limit=5&sort=-thoiGianBatDau"
+      );
       const currentDate = new Date();
       const events = response?.data?.suKiens || [];
       console.log("Fetched Events:", events);
 
       // Filter events where thoiGianKetThuc is greater than current date
-      const upcoming = events.filter(event => {
+      const upcoming = events.filter((event) => {
         const endTime = new Date(event.thoiGianKetThuc);
         return endTime > currentDate;
       });
@@ -34,7 +68,9 @@ const HomePage = () => {
 
   const fetchRecentExperts = async () => {
     try {
-      const response = await apiConfig.get("/chuyengias?limit=5&sort=-createdAt");
+      const response = await apiClient.get(
+        "/chuyengias?limit=5&sort=-createdAt"
+      );
       console.log("Recent Experts Data:", response?.data?.chuyenGias);
       setRecentExperts(response?.data?.chuyenGias || []);
     } catch (error) {
@@ -45,7 +81,7 @@ const HomePage = () => {
 
   const fetchAllExperts = async () => {
     try {
-      const response = await apiConfig.get("/chuyengias");
+      const response = await apiClient.get("/chuyengias");
       console.log("All Experts Data:", response?.data?.chuyenGias);
       setAllExperts(response?.data?.chuyenGias || []);
     } catch (error) {
@@ -61,6 +97,7 @@ const HomePage = () => {
         fetchUpcomingEvents(),
         fetchRecentExperts(),
         fetchAllExperts(),
+        fetchTopExpertsByEvent(),
       ]);
     } finally {
       setLoading(false);
@@ -93,26 +130,49 @@ const HomePage = () => {
 
   return (
     <div className="p-6">
-      <Title level={2} className="mb-6">Tổng quan</Title>
+      <Title level={2} className="mb-6">
+        Tổng quan
+      </Title>
 
       {/* Biểu đồ thanh - Top 5 trường có nhiều chuyên gia nhất */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-        <Title level={4} className="mb-4">Top 5 Trường Có Nhiều Chuyên Gia Nhất</Title>
+        <Title level={4} className="mb-4">
+          Top 5 Trường Có Nhiều Chuyên Gia Nhất
+        </Title>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={topTruongDonViData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis domain={[0, 'auto']} allowDecimals={false} />
+            <YAxis domain={[0, "auto"]} allowDecimals={false} />
             <Tooltip />
             <Legend />
             <Bar dataKey="count" fill="#8884d8" name="Số lượng chuyên gia" />
           </BarChart>
         </ResponsiveContainer>
       </div>
+      {/* Biểu đồ thanh - Top 5 chuyên gia tham gia nhiều sự kiện nhất */}
+      {/* Biểu đồ chuyên gia tham gia nhiều sự kiện nhất */}
+      <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+        <Title level={4} className="mb-4">
+          Top 5 Chuyên Gia Tham Gia Nhiều Sự Kiện Nhất
+        </Title>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={topExpertsByEvent}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="hoVaTen" />
+            <YAxis domain={[0, "auto"]} allowDecimals={false} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="totalEvents" fill="#82ca9d" name="Số sự kiện" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Sự kiện sắp diễn ra */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-        <Title level={4} className="mb-4">Các sự kiện sắp diễn ra</Title>
+        <Title level={4} className="mb-4">
+          Các sự kiện sắp diễn ra
+        </Title>
         <div className="space-y-4">
           {upcomingEvents.length > 0 ? (
             upcomingEvents.map((event, index) => (
@@ -121,14 +181,49 @@ const HomePage = () => {
                 className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors flex justify-between items-center border-b border-gray-200"
               >
                 <div className="flex-1">
-                  <div className="text-blue-500 font-medium text-xl">{event.suKien}</div>
-                  <div className="text-gray-600"><span className="font-medium">Mục đích:</span> {event.mucDich || <span className="italic text-gray-400">Không xác định</span>}</div>
-                  <div className="text-gray-600"><span className="font-medium">Chuyên gia:</span> {event.chuyenGia || <span className="italic text-gray-400">Không xác định</span>}</div>
-                  <div className="text-gray-600"><span className="font-medium">Địa điểm:</span> {event.diaDiem || <span className="italic text-gray-400">Không xác định</span>}</div>
+                  <div className="text-blue-500 font-medium text-xl">
+                    {event.suKien}
+                  </div>
+                  <div className="text-gray-600">
+                    <span className="font-medium">Mục đích:</span>{" "}
+                    {event.mucDich || (
+                      <span className="italic text-gray-400">
+                        Không xác định
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-gray-600">
+                    <span className="font-medium">Chuyên gia:</span>{" "}
+                    {event.chuyenGia || (
+                      <span className="italic text-gray-400">
+                        Không xác định
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-gray-600">
+                    <span className="font-medium">Địa điểm:</span>{" "}
+                    {event.diaDiem || (
+                      <span className="italic text-gray-400">
+                        Không xác định
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="text-gray-600 text-sm text-right min-w-[180px]">
-                  <div>Bắt đầu: {new Date(event.thoiGianBatDau).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}</div>
-                  <div>Kết thúc: {new Date(event.thoiGianKetThuc).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' })}</div>
+                  <div>
+                    Bắt đầu:{" "}
+                    {new Date(event.thoiGianBatDau).toLocaleString("vi-VN", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                  </div>
+                  <div>
+                    Kết thúc:{" "}
+                    {new Date(event.thoiGianKetThuc).toLocaleString("vi-VN", {
+                      dateStyle: "short",
+                      timeStyle: "short",
+                    })}
+                  </div>
                 </div>
               </div>
             ))
@@ -140,7 +235,9 @@ const HomePage = () => {
 
       {/* Danh sách chuyên gia gần đây */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
-        <Title level={4} className="mb-4">Danh sách chuyên gia được thêm gần đây</Title>
+        <Title level={4} className="mb-4">
+          Danh sách chuyên gia được thêm gần đây
+        </Title>
         <div className="grid grid-cols-6 gap-6">
           {recentExperts.map((expert, index) => (
             <div
@@ -152,7 +249,9 @@ const HomePage = () => {
                   {expert.hoVaTen?.charAt(0) || ""}
                 </span>
               </div>
-              <span className="text-sm font-medium text-gray-700">{expert.hoVaTen}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {expert.hoVaTen}
+              </span>
             </div>
           ))}
         </div>

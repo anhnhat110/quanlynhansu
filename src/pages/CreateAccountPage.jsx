@@ -11,26 +11,6 @@ const CreateAccountPage = () => {
 
   const onFinish = async (values) => {
     const { name, email, password, passwordConfirm } = values;
-    if (name.length < 6) {
-      message.error('Tền người dùng phải có ít nhất 6 ký tự.');
-    }
-    if (password !== passwordConfirm) {
-      message.error('Mật khẩu xác nhận không trùng khớp!');
-      return;
-    }
-
-    if (password.length < 8) {
-      message.error('Mật khẩu phải có ít nhất 8 ký tự.');
-      return;
-    }
-
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
-    if (!passwordRegex.test(password)) {
-      message.error(
-        'Mật khẩu phải bao gồm chữ hoa, chữ thường và số.'
-      );
-      return;
-    }
 
     try {
       const response = await userService.createUser({
@@ -64,7 +44,7 @@ const CreateAccountPage = () => {
           className="w-24 h-24 mb-6 rounded-full shadow-lg bg-white p-2"
         />
         <Title level={2} className="!text-white !mb-2 text-center">
-        HỆ THỐNG QUẢN LÝ THÔNG TIN CÁC CHUYÊN GIA NƯỚC NGOÀI
+          HỆ THỐNG QUẢN LÝ THÔNG TIN CÁC CHUYÊN GIA NƯỚC NGOÀI
         </Title>
         <Text className="text-lg font-medium text-center">
           Đại học Đà Nẵng - Trường Đại học Kinh Tế
@@ -85,7 +65,18 @@ const CreateAccountPage = () => {
             <Form.Item
               label="Tên người dùng"
               name="name"
-              rules={[{ required: true, message: 'Hãy nhập tên người dùng!' }]}
+              rules={[
+                { required: true, message: 'Hãy nhập tên người dùng!' },
+                { min: 6, message: 'Tên người dùng phải có ít nhất 6 ký tự.' },
+                {
+                  validator(_, value) {
+                    if (value && value.includes(' ')) {
+                      return Promise.reject(new Error('Tên người dùng không được chứa khoảng trắng.'));
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
             >
               <Input placeholder="Tên người dùng" size="large" />
             </Form.Item>
@@ -104,7 +95,21 @@ const CreateAccountPage = () => {
             <Form.Item
               label="Mật khẩu"
               name="password"
-              rules={[{ required: true, message: 'Hãy nhập mật khẩu!' }]}
+              rules={[
+                { required: true, message: 'Hãy nhập mật khẩu!' },
+                { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự.' },
+                {
+                  validator(_, value) {
+                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+                    if (value && !passwordRegex.test(value)) {
+                      return Promise.reject(
+                        new Error('Mật khẩu phải bao gồm chữ hoa, chữ thường và số.')
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
             >
               <Input.Password placeholder="Mật khẩu" size="large" />
             </Form.Item>

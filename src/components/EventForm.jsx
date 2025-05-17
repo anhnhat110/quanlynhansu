@@ -26,7 +26,7 @@ const EventForm = ({ event, onSuccess }) => {
 
   const generateMaSK = () => "SK-" + uuidv4().slice(0, 4).toUpperCase();
 
-  // Fetch chuyenGiaOptions from the API and populate form after data is loaded
+  // Fetch chuyenGiaOptions from the API
   useEffect(() => {
     const fetchChuyenGias = async () => {
       try {
@@ -55,7 +55,7 @@ const EventForm = ({ event, onSuccess }) => {
       // Edit mode: Populate form with event data
       form.setFieldsValue({
         maSK: event.maSK,
-        chuyenGia: event.chuyenGia, // This will be the hoVaTen
+        chuyenGia: event.chuyenGia,
         mucDich: event.mucDich,
         suKien: event.suKien,
         thoiGianBatDau: event.thoiGianBatDau,
@@ -63,26 +63,26 @@ const EventForm = ({ event, onSuccess }) => {
         diaDiem: event.diaDiem,
         thanhPhan: event.thanhPhan,
         ghiChu: event.ghiChu,
-        guides: event.guides?.[0] || undefined, // Set the _id from guides if exists
+        guides: event.guides?.[0] || undefined,
       });
 
       // Set custom values only if they don't match the options
       if (event.mucDich && !mucDichOptions.includes(event.mucDich)) {
         setCustomMucDich(event.mucDich);
       } else {
-        setCustomMucDich(""); // Reset if it matches an option
+        setCustomMucDich("");
       }
 
       if (event.chuyenGia && !chuyenGiaOptions.some((cg) => cg.hoVaTen === event.chuyenGia)) {
         setCustomChuyenGia(event.chuyenGia);
       } else {
-        setCustomChuyenGia(""); // Reset if it matches an option
+        setCustomChuyenGia("");
       }
 
       if (event.thanhPhan && !thanhPhanOptions.includes(event.thanhPhan)) {
         setCustomThanhPhan(event.thanhPhan);
       } else {
-        setCustomThanhPhan(""); // Reset if it matches an option
+        setCustomThanhPhan("");
       }
     } else {
       // Create mode: Reset form and generate new maSK
@@ -102,14 +102,11 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomChuyenGia("");
       setCustomThanhPhan("");
     }
-  }, [event, form, chuyenGiaOptions, mucDichOptions, thanhPhanOptions]);
+  }, [event, form, chuyenGiaOptions]);
 
   const handleSelectChange = (field, value) => {
     if (field === "mucDich") {
-      if (value && !mucDichOptions.includes(value) && value !== "Khác") {
-        setCustomMucDich(value);
-        form.setFieldValue("mucDich", value);
-      } else if (value === "Khác") {
+      if (value === "Khác") {
         setCustomMucDich("");
         form.setFieldValue("mucDich", "");
       } else {
@@ -117,10 +114,7 @@ const EventForm = ({ event, onSuccess }) => {
         form.setFieldValue("mucDich", value);
       }
     } else if (field === "chuyenGia") {
-      if (value && !chuyenGiaOptions.some((cg) => cg.hoVaTen === value) && value !== "Khác") {
-        setCustomChuyenGia(value);
-        form.setFieldValue("chuyenGia", value);
-      } else if (value === "Khác") {
+      if (value === "Khác") {
         setCustomChuyenGia("");
         form.setFieldValue("chuyenGia", "");
       } else {
@@ -128,10 +122,7 @@ const EventForm = ({ event, onSuccess }) => {
         form.setFieldValue("chuyenGia", value);
       }
     } else if (field === "thanhPhan") {
-      if (value && !thanhPhanOptions.includes(value) && value !== "Khác") {
-        setCustomThanhPhan(value);
-        form.setFieldValue("thanhPhan", value);
-      } else if (value === "Khác") {
+      if (value === "Khác") {
         setCustomThanhPhan("");
         form.setFieldValue("thanhPhan", "");
       } else {
@@ -163,7 +154,6 @@ const EventForm = ({ event, onSuccess }) => {
   };
 
   const onFinish = async (values) => {
-    console.log("Submitted data:", values);
     try {
       setLoading(true);
 
@@ -173,17 +163,17 @@ const EventForm = ({ event, onSuccess }) => {
 
       // Find the selected chuyenGia's _id based on hoVaTen
       const selectedChuyenGia = chuyenGiaOptions.find((cg) => cg.hoVaTen === values.chuyenGia);
-      const guideId = selectedChuyenGia ? selectedChuyenGia._id : values.guides; // Fallback to guides if in edit mode
+      const guideId = selectedChuyenGia ? selectedChuyenGia._id : values.guides;
 
       const payload = {
         ...values,
-        guides: guideId ? [guideId] : [], // Add guides as an array with the _id
+        guides: guideId ? [guideId] : [],
       };
 
       if (event?._id) {
         const updatedValues = { ...payload };
         delete updatedValues._id;
-        await fetch(`http://127.0.0.01:3005/api/v1/sukiens/${event._id}`, {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/sukiens/${event._id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -192,7 +182,7 @@ const EventForm = ({ event, onSuccess }) => {
         });
         message.success("Cập nhật sự kiện thành công");
       } else {
-        await fetch("http://127.0.0.01:3005/api/v1/sukiens", {
+        await fetch(`${import.meta.env.VITE_API_BASE_URL}/sukiens`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -219,7 +209,6 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomChuyenGia("");
       setCustomThanhPhan("");
 
-      // Call onSuccess to notify parent
       onSuccess();
     } catch (error) {
       console.error("Error saving event:", error);
@@ -252,9 +241,8 @@ const EventForm = ({ event, onSuccess }) => {
           onChange={(value) => handleSelectChange("chuyenGia", value)}
           onSearch={handleChuyenGiaSearch}
           placeholder="Chọn hoặc nhập chuyên gia"
-          filterOption={(input, option) =>
-            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
+          filterOption={false}
+          value={customChuyenGia || undefined}
         >
           {chuyenGiaOptions.map((item) => (
             <Option key={item._id} value={item.hoVaTen}>
