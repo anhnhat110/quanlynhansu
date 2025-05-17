@@ -5,7 +5,7 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const { Option } = Select;
-const API_URL = `${import.meta.env.VITE_API_BASE_URL}/users`;
+const API_URL = `${import.meta.env.VITE_API_BASE_URL}`;
 
 const fieldMap = {
   "Họ và tên": "hoVaTen",
