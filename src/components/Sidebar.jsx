@@ -60,7 +60,7 @@ export default function Sidebar() {
           {
             key: 'su-kien',
             icon: <CalendarOutlined />,
-            label: 'Quản lý sự kiện'
+            label: 'Quản lý sự kiện trao đổi'
           },
           {
             key: 'sinh-vien',
@@ -73,21 +73,13 @@ export default function Sidebar() {
             label: 'Quản lý danh mục đoàn'
           },
           {
-            key: 'dashboard',
+            key: 'bieu-do',
             icon: <PieChartOutlined />,
             label: 'Quản lý dashboard',
             children: [
               {
-                key: 'expertsbyunit',
-                label: 'Thống kê theo Trường/ Đơn vị'
-              },
-              {
-                key: 'expertsbycountry',
-                label: 'Thống kê theo Quốc gia'
-              },
-              {
-                key: 'expertsbypurpose',
-                label: 'Thống kê theo Mục đích'
+                key: 'bieu-do',
+                label: 'Biểu đồ'
               },
               {
                 key: 'export',

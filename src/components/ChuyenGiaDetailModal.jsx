@@ -23,11 +23,13 @@ const ChuyenGiaDetailModal = ({ chuyenGia, visible, onCancel }) => {
         <Descriptions.Item label="Giới tính">{chuyenGia.gioiTinh || '—'}</Descriptions.Item>
         <Descriptions.Item label="Email">{chuyenGia.email || '—'}</Descriptions.Item>
         <Descriptions.Item label="Quốc gia">{chuyenGia.quocGia || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Hộ chiếu">
-          {chuyenGia.hoChieu && chuyenGia.hoChieu.startsWith('data:image') ? (
+        <Descriptions.Item label="Hộ chiếu">{chuyenGia.hoChieu || '—'}</Descriptions.Item>
+
+        <Descriptions.Item label="Ảnh hộ chiếu">
+          {chuyenGia.anhHoChieu && chuyenGia.anhHoChieu.startsWith('data:image') ? (
             <Image
-              src={chuyenGia.hoChieu}
-              alt="Hộ chiếu"
+              src={chuyenGia.anhHoChieu}
+              alt="Ảnh hộ chiếu"
               style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain' }}
             />
           ) : (

@@ -67,21 +67,22 @@ const Account = () => {
 
   // Handle profile update
   const handleUpdateProfile = async (values) => {
-    setLoadingProfile(true);
-    try {
-      const token = localStorage.getItem("jwt");
-      const response = await axios.patch(
-        `${API_BASE_URL}/users/updateMe`,
-        values,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const updatedUser = response.data.data.user;
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      message.success("Cập nhật thông tin thành công");
-      profileForm.setFieldsValue({
-        name: updatedUser.name,
-        email: updatedUser.email,
-      });
+  setLoadingProfile(true);
+  try {
+    const token = localStorage.getItem("jwt");
+    const response = await axios.patch(
+      `${API_BASE_URL}/users/updateMe`,
+      values,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const updatedUser = response.data.data.user;
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    window.dispatchEvent(new Event("storage")); // <== Đồng bộ Header
+    message.success("Cập nhật thông tin thành công");
+    profileForm.setFieldsValue({
+      name: updatedUser.name,
+      email: updatedUser.email,
+    });
     } catch (error) {
       console.error("Error updating profile:", error);
       const errorMessage =
@@ -115,6 +116,10 @@ const Account = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       message.success("Cập nhật mật khẩu thành công");
+      localStorage.removeItem("jwt");
+      localStorage.removeItem("user");
+      navigate("/login");
+
       passwordForm.resetFields();
     } catch (error) {
       console.error("Error updating password:", error);

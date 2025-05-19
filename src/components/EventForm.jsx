@@ -1,18 +1,19 @@
+
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Select, message } from "antd";
 import { v4 as uuidv4 } from "uuid";
+import dayjs from "dayjs";
 
 const { Option } = Select;
 
 const EventForm = ({ event, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [chuyenGiaOptions, setChuyenGiaOptions] = useState([]); // Contains { _id, hoVaTen }
+  const [chuyenGiaOptions, setChuyenGiaOptions] = useState([]);
   const [customMucDich, setCustomMucDich] = useState("");
   const [customChuyenGia, setCustomChuyenGia] = useState("");
   const [customThanhPhan, setCustomThanhPhan] = useState("");
 
-  // Fixed options for mucDich and thanhPhan
   const mucDichOptions = [
     "Cập nhật kỹ năng",
     "Đào tạo chuyên môn",
@@ -26,19 +27,21 @@ const EventForm = ({ event, onSuccess }) => {
 
   const generateMaSK = () => "SK-" + uuidv4().slice(0, 4).toUpperCase();
 
-  // Fetch chuyenGiaOptions from the API
   useEffect(() => {
     const fetchChuyenGias = async () => {
       try {
+        const token = localStorage.getItem('jwt');
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chuyengias?fields=hoVaTen`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
           },
         });
+        if (!res.ok) throw new Error("Failed to fetch chuyenGias");
         const data = await res.json();
         const chuyenGias = data?.data?.chuyenGias || [];
-        setChuyenGiaOptions(chuyenGias); // Array of { _id, hoVaTen }
+        setChuyenGiaOptions(chuyenGias);
       } catch (error) {
         console.error("Lỗi khi load chuyên gia:", error);
         message.error("Không thể tải danh sách chuyên gia");
@@ -47,26 +50,30 @@ const EventForm = ({ event, onSuccess }) => {
     fetchChuyenGias();
   }, []);
 
-  // Populate form after chuyenGiaOptions is loaded
   useEffect(() => {
-    if (chuyenGiaOptions.length === 0) return; // Wait for chuyenGiaOptions to load
+    if (chuyenGiaOptions.length === 0 && event) return;
 
     if (event) {
-      // Edit mode: Populate form with event data
+      const thoiGianBatDau = event.thoiGianBatDau
+        ? dayjs(event.thoiGianBatDau).format("YYYY-MM-DDTHH:mm")
+        : "";
+      const thoiGianKetThuc = event.thoiGianKetThuc
+        ? dayjs(event.thoiGianKetThuc).format("YYYY-MM-DDTHH:mm")
+        : "";
+
       form.setFieldsValue({
         maSK: event.maSK,
         chuyenGia: event.chuyenGia,
         mucDich: event.mucDich,
         suKien: event.suKien,
-        thoiGianBatDau: event.thoiGianBatDau,
-        thoiGianKetThuc: event.thoiGianKetThuc,
+        thoiGianBatDau,
+        thoiGianKetThuc,
         diaDiem: event.diaDiem,
         thanhPhan: event.thanhPhan,
         ghiChu: event.ghiChu,
         guides: event.guides?.[0] || undefined,
       });
 
-      // Set custom values only if they don't match the options
       if (event.mucDich && !mucDichOptions.includes(event.mucDich)) {
         setCustomMucDich(event.mucDich);
       } else {
@@ -85,7 +92,6 @@ const EventForm = ({ event, onSuccess }) => {
         setCustomThanhPhan("");
       }
     } else {
-      // Create mode: Reset form and generate new maSK
       form.resetFields();
       form.setFieldsValue({
         maSK: generateMaSK(),
@@ -157,42 +163,72 @@ const EventForm = ({ event, onSuccess }) => {
     try {
       setLoading(true);
 
+      // Client-side date validation
+      const thoiGianBatDau = values.thoiGianBatDau ? new Date(values.thoiGianBatDau) : null;
+      const thoiGianKetThuc = values.thoiGianKetThuc ? new Date(values.thoiGianKetThuc) : null;
+
+      if (thoiGianBatDau && thoiGianKetThuc && thoiGianKetThuc < thoiGianBatDau) {
+        form.setFields([
+          {
+            name: "thoiGianKetThuc",
+            errors: ["Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"],
+          },
+        ]);
+        setLoading(false);
+        return;
+      }
+
       if (!values.maSK) {
         values.maSK = generateMaSK();
       }
 
-      // Find the selected chuyenGia's _id based on hoVaTen
-      const selectedChuyenGia = chuyenGiaOptions.find((cg) => cg.hoVaTen === values.chuyenGia);
-      const guideId = selectedChuyenGia ? selectedChuyenGia._id : values.guides;
-
       const payload = {
         ...values,
-        guides: guideId ? [guideId] : [],
+        thoiGianBatDau: thoiGianBatDau ? thoiGianBatDau.toISOString() : undefined,
+        thoiGianKetThuc: thoiGianKetThuc ? thoiGianKetThuc.toISOString() : undefined,
       };
 
+      const selectedChuyenGia = chuyenGiaOptions.find((cg) => cg.hoVaTen === values.chuyenGia);
+      const guideId = selectedChuyenGia ? selectedChuyenGia._id : values.guides;
+      payload.guides = guideId ? [guideId] : [];
+
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        message.error('Vui lòng đăng nhập để tiếp tục');
+        setLoading(false);
+        return;
+      }
+
+      let res;
       if (event?._id) {
         const updatedValues = { ...payload };
         delete updatedValues._id;
-        await fetch(`${import.meta.env.VITE_API_BASE_URL}/sukiens/${event._id}`, {
+        res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/sukiens/${event._id}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify(updatedValues),
         });
-        message.success("Cập nhật sự kiện thành công");
       } else {
-        await fetch(`${import.meta.env.VITE_API_BASE_URL}/sukiens`, {
+        res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/sukiens`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         });
-        message.success("Thêm mới sự kiện thành công");
       }
 
-      // Reset form and custom states
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to save event');
+      }
+
+      message.success(event?._id ? "Cập nhật sự kiện thành công" : "Thêm mới sự kiện thành công");
+
       form.resetFields();
       form.setFieldsValue({
         maSK: generateMaSK(),
@@ -208,11 +244,19 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomMucDich("");
       setCustomChuyenGia("");
       setCustomThanhPhan("");
-
       onSuccess();
     } catch (error) {
       console.error("Error saving event:", error);
-      message.error("Có lỗi xảy ra khi lưu sự kiện");
+      if (error.message.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
+        form.setFields([
+          {
+            name: "thoiGianKetThuc",
+            errors: ["Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"],
+          },
+        ]);
+      } else {
+        message.error(error.message || 'Có lỗi xảy ra khi lưu sự kiện');
+      }
     } finally {
       setLoading(false);
     }
@@ -223,7 +267,6 @@ const EventForm = ({ event, onSuccess }) => {
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      initialValues={event || {}}
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item label="Mã sự kiện" name="maSK" className="col-span-1">
@@ -357,10 +400,10 @@ const EventForm = ({ event, onSuccess }) => {
             setCustomThanhPhan("");
           }}
         >
-          Nhập lạilại
+          Nhập lại
         </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
-          {event?.maSK ? "Cập nhật" : "Lưu"}
+          {event?._id ? "Cập nhật" : "Lưu"}
         </Button>
       </Form.Item>
     </Form>

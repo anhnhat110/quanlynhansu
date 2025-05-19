@@ -150,4 +150,16 @@ export const sinhVienService = {
         throw error;
       });
   },
+  getQuocGias: () => {
+  console.log('Calling GET /sinhviens?fields=quocGia');
+  return apiClient.get('/sinhviens', { params: { fields: 'quocGia' } })
+    .then(response => {
+      console.log('API response:', response);
+      return response;
+    })
+    .catch(error => {
+      console.error('API request failed:', error);
+      throw error;
+    });
+},
 };

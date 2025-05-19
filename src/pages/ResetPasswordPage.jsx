@@ -64,7 +64,7 @@ const ResetPasswordPage = () => {
           Đại học Đà Nẵng - Trường Đại học Kinh Tế
         </Text>
       </div>
-      <div className="flex-1 bg-white flex justify-center items-center p-10 rounded-l-3xl shadow-lg">
+      <div className="flex-1 bg-white flex justify-center items-center p-10 shadow-lg">
         <div className="w-full max-w-md">
           <Title level={2} className="!text-center">Đặt lại mật khẩu</Title>
           <Form name="reset_password" onFinish={onFinish} layout="vertical">

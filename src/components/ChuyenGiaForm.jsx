@@ -16,6 +16,9 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
   const [customChucDanh, setCustomChucDanh] = useState("");
   const [customQuocGia, setCustomQuocGia] = useState("");
   const [customTruongDonVi, setCustomTruongDonVi] = useState("");
+  const [searchChucDanh, setSearchChucDanh] = useState("");
+  const [searchQuocGia, setSearchQuocGia] = useState("");
+  const [searchTruongDonVi, setSearchTruongDonVi] = useState("");
   const [fileList, setFileList] = useState([]);
   const [hoChieuBase64, setHoChieuBase64] = useState("");
 
@@ -47,21 +50,26 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       form.setFieldsValue(chuyengia);
       if (chuyengia.chucDanh && !chucDanhOptions.includes(chuyengia.chucDanh)) {
         setCustomChucDanh(chuyengia.chucDanh);
+      } else {
+        setCustomChucDanh("");
       }
       if (chuyengia.quocGia && !quocGiaOptions.includes(chuyengia.quocGia)) {
         setCustomQuocGia(chuyengia.quocGia);
+      } else {
+        setCustomQuocGia("");
       }
       if (chuyengia.truongDonVi && !truongDonViOptions.includes(chuyengia.truongDonVi)) {
         setCustomTruongDonVi(chuyengia.truongDonVi);
+      } else {
+        setCustomTruongDonVi("");
       }
-      if (chuyengia.hoChieu) {
-        setHoChieuBase64(chuyengia.hoChieu);
+      if (chuyengia.anhHoChieu) {
+        setHoChieuBase64(chuyengia.anhHoChieu);
         setFileList([
           {
             uid: "-1",
-            name: "passport.jpg",
             status: "done",
-            url: chuyengia.hoChieu,
+            url: chuyengia.anhHoChieu,
           },
         ]);
       }
@@ -84,65 +92,73 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       setCustomChucDanh("");
       setCustomQuocGia("");
       setCustomTruongDonVi("");
+      setSearchChucDanh("");
+      setSearchQuocGia("");
+      setSearchTruongDonVi("");
     }
   }, [chuyengia, form, chucDanhOptions, quocGiaOptions, truongDonViOptions]);
 
+  // Handle Select changes (aligned with StudentForm.jsx)
   const handleSelectChange = (field, value) => {
     if (field === "chucDanh") {
-      if (value && !chucDanhOptions.includes(value) && value !== "Khác") {
-        setCustomChucDanh(value);
-        form.setFieldValue("chucDanh", value);
-      } else if (value === "Khác") {
-        setCustomChucDanh("");
-        form.setFieldValue("chucDanh", "");
+      if (value === "Khác") {
+        form.setFieldValue("chucDanh", searchChucDanh || "");
+        setCustomChucDanh(searchChucDanh || "");
       } else {
-        setCustomChucDanh("");
         form.setFieldValue("chucDanh", value);
+        setCustomChucDanh("");
       }
     } else if (field === "quocGia") {
-      if (value && !quocGiaOptions.includes(value) && value !== "Khác") {
-        setCustomQuocGia(value);
-        form.setFieldValue("quocGia", value);
-      } else if (value === "Khác") {
-        setCustomQuocGia("");
-        form.setFieldValue("quocGia", "");
+      if (value === "Khác") {
+        form.setFieldValue("quocGia", searchQuocGia || "");
+        setCustomQuocGia(searchQuocGia || "");
       } else {
-        setCustomQuocGia("");
         form.setFieldValue("quocGia", value);
+        setCustomQuocGia("");
       }
     } else if (field === "truongDonVi") {
-      if (value && !truongDonViOptions.includes(value) && value !== "Khác") {
-        setCustomTruongDonVi(value);
-        form.setFieldValue("truongDonVi", value);
-      } else if (value === "Khác") {
-        setCustomTruongDonVi("");
-        form.setFieldValue("truongDonVi", "");
+      if (value === "Khác") {
+        form.setFieldValue("truongDonVi", searchTruongDonVi || "");
+        setCustomTruongDonVi(searchTruongDonVi || "");
       } else {
-        setCustomTruongDonVi("");
         form.setFieldValue("truongDonVi", value);
+        setCustomTruongDonVi("");
       }
     }
   };
 
+  // Handle search input (aligned with StudentForm.jsx)
   const handleChucDanhSearch = (value) => {
-    if (value) {
-      setCustomChucDanh(value);
+    setSearchChucDanh(value);
+    if (form.getFieldValue("chucDanh") === searchChucDanh || 
+        form.getFieldValue("chucDanh") === "Khác") {
       form.setFieldValue("chucDanh", value);
+      setCustomChucDanh(value);
     }
   };
 
   const handleQuocGiaSearch = (value) => {
-    if (value) {
-      setCustomQuocGia(value);
+    setSearchQuocGia(value);
+    if (form.getFieldValue("quocGia") === searchQuocGia || 
+        form.getFieldValue("quocGia") === "Khác") {
       form.setFieldValue("quocGia", value);
+      setCustomQuocGia(value);
     }
   };
 
   const handleTruongDonViSearch = (value) => {
-    if (value) {
-      setCustomTruongDonVi(value);
+    setSearchTruongDonVi(value);
+    if (form.getFieldValue("truongDonVi") === searchTruongDonVi || 
+        form.getFieldValue("truongDonVi") === "Khác") {
       form.setFieldValue("truongDonVi", value);
+      setCustomTruongDonVi(value);
     }
+  };
+
+  // Custom filter function for Select (same as StudentForm.jsx)
+  const filterOption = (input, option) => {
+    if (option.value === "Khác") return true; // Always show "Khác"
+    return option.children.toLowerCase().includes(input.toLowerCase());
   };
 
   const handleUploadChange = async ({ fileList: newFileList }) => {
@@ -194,51 +210,59 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
 
       const data = {
         ...values,
-        hoChieu: hoChieuBase64,
+        anhHoChieu: hoChieuBase64,
       };
 
-      if (!data.hoChieu) {
-        throw new Error("Vui lòng tải lên ảnh hộ chiếu");
-      }
-
-      // Log the payload for debugging
-      console.log("Submitting data:", data);
-      console.log("hoChieuBase64 size (bytes):", hoChieuBase64.length);
-
       if (chuyengia?._id) {
-        // Ensure _id exists for update
         if (!chuyengia._id) {
           throw new Error("Không tìm thấy ID của chuyên gia để cập nhật");
         }
-
         const updatedValues = { ...data };
-        delete updatedValues._id; // Remove _id from the payload
-        console.log("Updating specialist with ID:", chuyengia._id);
-        console.log("Update payload:", updatedValues);
-
-        const response = await chuyenGiaService.updateChuyenGia(chuyengia._id, updatedValues);
-        console.log("Update response:", response);
+        delete updatedValues._id;
+        await chuyenGiaService.updateChuyenGia(chuyengia._id, updatedValues);
         message.success("Cập nhật chuyên gia thành công");
       } else {
-        console.log("Creating new specialist");
-        const response = await chuyenGiaService.createChuyenGia(data);
-        console.log("Create response:", response);
+        await chuyenGiaService.createChuyenGia(data);
         message.success("Thêm mới chuyên gia thành công");
       }
+
+      // Reset form
+      form.resetFields();
+      form.setFieldsValue({
+        maCG: generateMaCG(),
+        hoVaTen: "",
+        email: "",
+        gioiTinh: "",
+        quocGia: "",
+        truongDonVi: "",
+        chucDanh: "",
+        chucVu: "",
+        chuyenNganh: "",
+        ghiChu: "",
+      });
+      setFileList([]);
+      setHoChieuBase64("");
+      setCustomChucDanh("");
+      setCustomQuocGia("");
+      setCustomTruongDonVi("");
+      setSearchChucDanh("");
+      setSearchQuocGia("");
+      setSearchTruongDonVi("");
 
       onSuccess?.();
     } catch (error) {
       console.error("Lỗi khi lưu chuyên gia:", error);
-      // Check if the error has a response from the server
-      if (error.response) {
-        console.error("Server response:", error.response.data);
-        message.error(
-          error.response.data.message || "Lỗi server khi lưu chuyên gia"
-        );
-      } else if (error.message) {
-        message.error(error.message);
+      if (error.response?.status === 400 && error.response.data?.message) {
+        const msg = error.response.data.message;
+        if (msg.includes('Email đã tồn tại')) {
+          form.setFields([{ name: 'email', errors: ['Email đã tồn tại, vui lòng nhập khác'] }]);
+        } else if (msg.includes('Hộ chiếu đã tồn tại')) {
+          form.setFields([{ name: 'hoChieu', errors: ['Hộ chiếu đã tồn tại, vui lòng nhập khác'] }]);
+        } else {
+          message.error(msg || "Lỗi server khi lưu chuyên gia");
+        }
       } else {
-        message.error("Có lỗi xảy ra khi lưu chuyên gia");
+        message.error(error.message || "Có lỗi xảy ra khi lưu chuyên gia");
       }
     } finally {
       setLoading(false);
@@ -298,8 +322,8 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
           onChange={(value) => handleSelectChange("quocGia", value)}
           onSearch={handleQuocGiaSearch}
           placeholder="Chọn hoặc nhập quốc gia"
-          filterOption={false}
-          value={customQuocGia || undefined}
+          filterOption={filterOption}
+          value={customQuocGia || form.getFieldValue("quocGia") || undefined}
         >
           {quocGiaOptions.map((item, idx) => (
             <Option key={idx} value={item}>
@@ -311,15 +335,45 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       </Form.Item>
 
       <Form.Item
+        label="Trường / Đơn vị"
+        name="truongDonVi"
+        rules={[{ required: true, message: "Vui lòng chọn hoặc nhập trường / đơn vị" }]}
+      >
+        <Select
+          showSearch
+          allowClear
+          onChange={(value) => handleSelectChange("truongDonVi", value)}
+          onSearch={handleTruongDonViSearch}
+          placeholder="Chọn hoặc nhập trường / đơn vị"
+          filterOption={filterOption}
+          value={customTruongDonVi || form.getFieldValue("truongDonVi") || undefined}
+        >
+          {truongDonViOptions.map((ten, idx) => (
+            <Option key={idx} value={ten}>
+              {ten}
+            </Option>
+          ))}
+          <Option value="Khác">Khác</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item
         label="Hộ chiếu"
         name="hoChieu"
-        rules={[{ required: true, message: "Vui lòng tải lên ảnh hộ chiếu" }]}
+        rules={[{ required: true, message: "Vui lòng nhập hộ chiếu" }]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        label="Ảnh hộ chiếu"
+        name="anhHoChieu"
       >
         <div>
           {hoChieuBase64 && (
             <img
               src={hoChieuBase64}
-              alt="Hộ chiếu"
+              alt="Ảnh hộ chiếu"
               style={{ maxWidth: "100%", maxHeight: "200px", marginBottom: "10px" }}
             />
           )}
@@ -340,29 +394,6 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       </Form.Item>
 
       <Form.Item
-        label="Trường / Đơn vị"
-        name="truongDonVi"
-        rules={[{ required: true, message: "Vui lòng chọn hoặc nhập trường / đơn vị" }]}
-      >
-        <Select
-          showSearch
-          allowClear
-          onChange={(value) => handleSelectChange("truongDonVi", value)}
-          onSearch={handleTruongDonViSearch}
-          placeholder="Chọn hoặc nhập trường / đơn vị"
-          filterOption={false}
-          value={customTruongDonVi || undefined}
-        >
-          {truongDonViOptions.map((ten, idx) => (
-            <Option key={idx} value={ten}>
-              {ten}
-            </Option>
-          ))}
-          <Option value="Khác">Khác</Option>
-        </Select>
-      </Form.Item>
-
-      <Form.Item
         label="Chức danh"
         name="chucDanh"
         rules={[{ required: true, message: "Vui lòng chọn hoặc nhập chức danh" }]}
@@ -373,8 +404,8 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
           onChange={(value) => handleSelectChange("chucDanh", value)}
           onSearch={handleChucDanhSearch}
           placeholder="Chọn hoặc nhập chức danh"
-          filterOption={false}
-          value={customChucDanh || undefined}
+          filterOption={filterOption}
+          value={customChucDanh || form.getFieldValue("chucDanh") || undefined}
         >
           {chucDanhOptions.map((item, idx) => (
             <Option key={idx} value={item}>
@@ -388,13 +419,14 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       <Form.Item
         label="Chức vụ"
         name="chucVu"
-        rules={[{ required: true, message: "Vui lòng nhập chức vụ" }]}
       >
         <Input />
       </Form.Item>
+
       <Form.Item label="Chuyên ngành" name="chuyenNganh">
         <Input />
       </Form.Item>
+
       <Form.Item label="Ghi chú" name="ghiChu" className="col-span-2">
         <Input.TextArea rows={4} />
       </Form.Item>
@@ -422,6 +454,9 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
             setCustomChucDanh("");
             setCustomQuocGia("");
             setCustomTruongDonVi("");
+            setSearchChucDanh("");
+            setSearchQuocGia("");
+            setSearchTruongDonVi("");
           }}
         >
           Nhập Lại

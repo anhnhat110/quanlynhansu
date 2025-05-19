@@ -28,7 +28,7 @@ const CreateAccountPage = () => {
       message.success('Tạo tài khoản thành công!');
       navigate('/login');
     } catch (error) {
-      const errorMessage = error.message || 'Tên người dùng hoặc email đã tồn tại';
+      const errorMessage = 'Email đã tồn tại, vui lòng nhập email khác';
       message.error(errorMessage);
       console.error('Lỗi tạo tài khoản:', error);
     }
@@ -52,7 +52,7 @@ const CreateAccountPage = () => {
       </div>
 
       {/* Right Side with Form */}
-      <div className="flex-1 bg-white flex justify-center items-center p-10 rounded-l-3xl shadow-lg">
+      <div className="flex-1 bg-white flex justify-center items-center p-10 shadow-lg">
         <div className="w-full max-w-md">
           <Title level={2} className="!text-center">
             Đăng ký tài khoản
@@ -67,15 +67,6 @@ const CreateAccountPage = () => {
               name="name"
               rules={[
                 { required: true, message: 'Hãy nhập tên người dùng!' },
-                { min: 6, message: 'Tên người dùng phải có ít nhất 6 ký tự.' },
-                {
-                  validator(_, value) {
-                    if (value && value.includes(' ')) {
-                      return Promise.reject(new Error('Tên người dùng không được chứa khoảng trắng.'));
-                    }
-                    return Promise.resolve();
-                  },
-                },
               ]}
             >
               <Input placeholder="Tên người dùng" size="large" />

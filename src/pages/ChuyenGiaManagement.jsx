@@ -104,14 +104,14 @@ const ChuyenGiaManagement = () => {
       key: "quocGia",
     },
     {
-      title: "Trường / Đơn vị",
+      title: "Trường Đơn vị",
       dataIndex: "truongDonVi",
       key: "truongDonVi",
     },
     {
-      title: "Chức vụ",
-      dataIndex: "chucVu",
-      key: "chucVu",
+      title: "Chức danh",
+      dataIndex: "chucDanh",
+      key: "chucDanh",
     },
     {
       title: "",

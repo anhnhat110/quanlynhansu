@@ -1,13 +1,11 @@
-import React, { useEffect } from 'react';
+  
+import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
-import { v4 as uuidv4 } from 'uuid';
 import { danhMucDoanService } from '../services/danhMucDoanService';
-import { useState } from 'react';
+
 const DanhMucDoanForm = ({ doan, onSuccess }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-
-  const generateHoChieu = () => `P-${uuidv4().slice(0, 4).toUpperCase()}`;
 
   useEffect(() => {
     if (doan) {
@@ -27,7 +25,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       form.setFieldsValue({
         tenDoan: '',
         nguoiDaiDien: '',
-        hoChieu: generateHoChieu(),
+        hoChieu: '',
         quocTich: '',
         DOB: '',
         thoiGianBatDau: '',
@@ -42,8 +40,16 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
     try {
       setLoading(true);
 
-      if (!values.hoChieu) {
-        values.hoChieu = generateHoChieu();
+      // Client-side validation for hoChieu
+      if (!/^[A-Za-z0-9]{8}$/.test(values.hoChieu)) {
+        form.setFields([
+          {
+            name: 'hoChieu',
+            errors: ['Hộ chiếu phải có đúng 8 ký tự chữ hoặc số'],
+          },
+        ]);
+        setLoading(false);
+        return;
       }
 
       const payload = { ...values };
@@ -62,7 +68,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       form.setFieldsValue({
         tenDoan: '',
         nguoiDaiDien: '',
-        hoChieu: generateHoChieu(),
+        hoChieu: '',
         quocTich: '',
         DOB: '',
         thoiGianBatDau: '',
@@ -74,7 +80,29 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       onSuccess();
     } catch (error) {
       console.error('Error saving danh muc doan:', error);
-      message.error('Có lỗi xảy ra khi lưu đoàn');
+      if (error.response?.status === 400 && error.response.data?.message) {
+        const msg = error.response.data.message;
+        if (msg.includes('Hộ chiếu đã tồn tại')) {
+          form.setFields([
+            { name: 'hoChieu', errors: ['Hộ chiếu đã tồn tại, vui lòng nhập khác'] }
+          ]);
+        } else if (msg.includes('Hộ chiếu phải có đúng 8 ký tự')) {
+          form.setFields([
+            { name: 'hoChieu', errors: ['Hộ chiếu phải có đúng 8 ký tự chữ hoặc số'] }
+          ]);
+        } else if (msg.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
+          form.setFields([
+            {
+              name: 'thoiGianKetThuc',
+              errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'],
+            },
+          ]);
+        } else {
+          message.error(msg || 'Lỗi server khi lưu đoàn');
+        }
+      } else {
+        message.error(error.message || 'Có lỗi xảy ra khi lưu đoàn');
+      }
     } finally {
       setLoading(false);
     }
@@ -104,8 +132,19 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         <Input />
       </Form.Item>
 
-      <Form.Item label="Hộ chiếu" name="hoChieu" className="col-span-1">
-        <Input disabled className="bg-gray-100" />
+      <Form.Item
+        label="Hộ chiếu"
+        name="hoChieu"
+        className="col-span-1"
+        rules={[
+          { required: true, message: 'Vui lòng nhập hộ chiếu' },
+          {
+            pattern: /^[A-Za-z0-9]{8}$/,
+            message: 'Hộ chiếu phải có đúng 8 ký tự chữ hoặc số',
+          }
+        ]}
+      >
+        <Input maxLength={8} />
       </Form.Item>
 
       <Form.Item
@@ -161,7 +200,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
             form.setFieldsValue({
               tenDoan: '',
               nguoiDaiDien: '',
-              hoChieu: generateHoChieu(),
+              hoChieu: '',
               quocTich: '',
               DOB: '',
               thoiGianBatDau: '',
@@ -174,7 +213,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
           Nhập lại
         </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
-          {doan?.hoChieu ? 'Cập nhật' : 'Lưu'}
+          {doan?._id ? 'Cập nhật' : 'Lưu'}
         </Button>
       </Form.Item>
     </Form>
