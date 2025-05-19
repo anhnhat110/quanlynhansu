@@ -60,12 +60,12 @@ export default function Sidebar() {
           {
             key: 'su-kien',
             icon: <CalendarOutlined />,
-            label: 'Quản lý sự kiện trao đổi'
+            label: 'Quản lý sự kiện '
           },
           {
             key: 'sinh-vien',
             icon: <UserSwitchOutlined />,
-            label: 'Quản lý sinh viên'
+            label: 'Quản lý sinh viên trao đổi'
           },
           {
             key: 'danh-muc-doan',

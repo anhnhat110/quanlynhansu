@@ -47,7 +47,7 @@ const Header = () => {
 
   const userMenu = (
     <Menu>
-      <Menu.Item key="account" onClick={() => navigate("/account")}>
+      <Menu.Item key="account" onClick={() => navigate("/tai-khoan")}>
         Quản lý tài khoản
       </Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Typography, Spin, Modal } from "antd";
+import { Typography, Spin, Modal, Card } from "antd";
 import apiClient from "../config/api.config";
 import EventDetailModal from "../components/EventDetailModal";
 import ChuyenGiaDetailModal from "../components/ChuyenGiaDetailModal";
@@ -13,6 +13,12 @@ const HomePage = () => {
   const [recentExperts, setRecentExperts] = useState([]);
   const [upcomingDoans, setUpcomingDoans] = useState([]);
   const [recentSinhViens, setRecentSinhViens] = useState([]);
+  const [counts, setCounts] = useState({
+    experts: 0,
+    students: 0,
+    events: 0,
+    doans: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [selectedExpert, setSelectedExpert] = useState(null);
@@ -81,6 +87,26 @@ const HomePage = () => {
     }
   };
 
+  const fetchCounts = async () => {
+    try {
+      const [eventsRes, expertsRes, doansRes, studentsRes] = await Promise.all([
+        apiClient.get("/sukiens?limit=0"), // Assuming limit=0 or a specific endpoint returns total count
+        apiClient.get("/chuyengias?limit=0"),
+        apiClient.get("/danhmucdoans?limit=0"),
+        apiClient.get("/sinhviens?limit=0"),
+      ]);
+      setCounts({
+        events: eventsRes?.data?.total || eventsRes?.data?.suKiens?.length || 0,
+        experts: expertsRes?.data?.total || expertsRes?.data?.chuyenGias?.length || 0,
+        doans: doansRes?.data?.total || doansRes?.data?.danhMucDoans?.length || 0,
+        students: studentsRes?.data?.total || studentsRes?.data?.sinhViens?.length || 0,
+      });
+    } catch (error) {
+      console.error("Failed to fetch counts:", error);
+      setCounts({ experts: 0, students: 0, events: 0, doans: 0 });
+    }
+  };
+
   const fetchAllData = async () => {
     try {
       setLoading(true);
@@ -89,6 +115,7 @@ const HomePage = () => {
         fetchRecentExperts(),
         fetchUpcomingDoans(),
         fetchRecentSinhViens(),
+        fetchCounts(),
       ]);
     } finally {
       setLoading(false);
@@ -136,6 +163,26 @@ const HomePage = () => {
       <Title level={2} className="mb-6">
         Tổng quan
       </Title>
+
+      {/* Statistics Section */}
+      <div className="grid grid-cols-4 gap-6 mb-6">
+        <Card className="bg-white shadow-sm">
+          <Title level={5} className="text-blue-500">Số lượng chuyên gia</Title>
+          <div className="text-2xl font-bold text-gray-700">{counts.experts}</div>
+        </Card>
+        <Card className="bg-white shadow-sm">
+          <Title level={5} className="text-blue-500">Số lượng sinh viên trao đổi</Title>
+          <div className="text-2xl font-bold text-gray-700">{counts.students}</div>
+        </Card>
+        <Card className="bg-white shadow-sm">
+          <Title level={5} className="text-blue-500">Số lượng sự kiện</Title>
+          <div className="text-2xl font-bold text-gray-700">{counts.events}</div>
+        </Card>
+        <Card className="bg-white shadow-sm">
+          <Title level={5} className="text-blue-500">Số lượng đoàn đối tác</Title>
+          <div className="text-2xl font-bold text-gray-700">{counts.doans}</div>
+        </Card>
+      </div>
 
       {/* Sự kiện sắp diễn ra */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
@@ -288,19 +335,19 @@ const HomePage = () => {
         <div className="grid grid-cols-6 gap-6">
           {recentSinhViens.length > 0 ? (
             recentSinhViens.map((student, index) => (
-  <div
-    key={index}
-    className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-    onClick={() => handleSinhVienClick(student)}
-  >
-    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-2">
-      <span className="text-blue-500 text-xl font-medium">
-        {student.hoVaTen?.charAt(0) || ""}
-      </span>
-    </div>
-    <span className="text-sm font-medium text-gray-700">{student.hoVaTen}</span>
-  </div>
-))
+              <div
+                key={index}
+                className="flex flex-col items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => handleSinhVienClick(student)}
+              >
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-2">
+                  <span className="text-blue-500 text-xl font-medium">
+                    {student.hoVaTen?.charAt(0) || ""}
+                  </span>
+                </div>
+                <span className="text-sm font-medium text-gray-700">{student.hoVaTen}</span>
+              </div>
+            ))
           ) : (
             <div>Không có sinh viên nào.</div>
           )}
@@ -333,10 +380,10 @@ const HomePage = () => {
         }}
       />
       <StudentDetailModal
-  visible={isSinhVienModalVisible}
-  onCancel={() => setIsSinhVienModalVisible(false)}
-  student={selectedSinhVien}
-/>
+        visible={isSinhVienModalVisible}
+        onCancel={() => setIsSinhVienModalVisible(false)}
+        student={selectedSinhVien}
+      />
     </div>
   );
 };
