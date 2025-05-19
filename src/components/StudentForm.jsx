@@ -341,19 +341,6 @@ if (error.response?.status === 400 && error.response.data?.message) {
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button
-          type="default"
-          htmlType="button"
-          onClick={() => {
-            form.resetFields();
-            setCustomTruongDoiTac('');
-            setCustomQuocGia('');
-            setSearchTruongDoiTac('');
-            setSearchQuocGia('');
-          }}
-        >
-          Nhập lại
-        </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
           {student?.maSV ? 'Cập nhật' : 'Lưu'}
         </Button>

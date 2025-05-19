@@ -1,4 +1,4 @@
-  
+
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { danhMucDoanService } from '../services/danhMucDoanService';
@@ -192,26 +192,6 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button
-          type="default"
-          htmlType="button"
-          onClick={() => {
-            form.resetFields();
-            form.setFieldsValue({
-              tenDoan: '',
-              nguoiDaiDien: '',
-              hoChieu: '',
-              quocTich: '',
-              DOB: '',
-              thoiGianBatDau: '',
-              thoiGianKetThuc: '',
-              noiDung: '',
-              ghiChu: '',
-            });
-          }}
-        >
-          Nhập lại
-        </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
           {doan?._id ? 'Cập nhật' : 'Lưu'}
         </Button>

@@ -432,35 +432,6 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button
-          type="default"
-          htmlType="button"
-          onClick={() => {
-            form.resetFields();
-            form.setFieldsValue({
-              maCG: generateMaCG(),
-              hoVaTen: "",
-              email: "",
-              gioiTinh: "",
-              quocGia: "",
-              truongDonVi: "",
-              chucDanh: "",
-              chucVu: "",
-              chuyenNganh: "",
-              ghiChu: "",
-            });
-            setFileList([]);
-            setHoChieuBase64("");
-            setCustomChucDanh("");
-            setCustomQuocGia("");
-            setCustomTruongDonVi("");
-            setSearchChucDanh("");
-            setSearchQuocGia("");
-            setSearchTruongDonVi("");
-          }}
-        >
-          Nhập Lại
-        </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
           {chuyengia?.maCG ? "Cập nhật" : "Lưu"}
         </Button>

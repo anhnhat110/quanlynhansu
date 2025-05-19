@@ -379,29 +379,6 @@ const EventForm = ({ event, onSuccess }) => {
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button
-          type="default"
-          htmlType="button"
-          onClick={() => {
-            form.resetFields();
-            form.setFieldsValue({
-              maSK: generateMaSK(),
-              suKien: "",
-              mucDich: "",
-              chuyenGia: "",
-              thanhPhan: "",
-              diaDiem: "",
-              thoiGianBatDau: "",
-              thoiGianKetThuc: "",
-              ghiChu: "",
-            });
-            setCustomMucDich("");
-            setCustomChuyenGia("");
-            setCustomThanhPhan("");
-          }}
-        >
-          Nhập lại
-        </Button>
         <Button type="primary" htmlType="submit" loading={loading}>
           {event?._id ? "Cập nhật" : "Lưu"}
         </Button>
