@@ -36,8 +36,8 @@ const DanhMucDoanManagement = () => {
       if (searchTerm) params.search = searchTerm;
 
       const response = await danhMucDoanService.getAllDanhMucDoan(params);
-      const doanData = response?.data?.data?.danhMucDoans || response?.data?.danhMucDoans || [];
-      const total = response?.data?.length || doanData.length || 0;
+      const doanData = response?.data?.danhMucDoans || response?.danhMucDoans || response?.data || response || [];
+      const total = response?.data?.total || response?.total || doanData.length || 0;
 
       setDanhMucDoans(Array.isArray(doanData) ? doanData : []);
       setTotalRecords(total);

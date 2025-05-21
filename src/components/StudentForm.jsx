@@ -154,19 +154,44 @@ const StudentForm = ({ student, onSuccess }) => {
     return option.children.toLowerCase().includes(input.toLowerCase());
   };
 
+  // Validation function for thoiGianKetThuc
+  const validateEndTime = (_, value) => {
+    if (!value) return Promise.reject(new Error('Vui lòng nhập thời gian kết thúc'));
+    const thoiGianBatDauRaw = form.getFieldValue('thoiGianBatDau');
+    if (!thoiGianBatDauRaw) return Promise.resolve();
+
+    const thoiGianBatDau = new Date(thoiGianBatDauRaw);
+    const thoiGianKetThuc = new Date(value);
+
+    if (thoiGianKetThuc < thoiGianBatDau) {
+      return Promise.reject(new Error('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'));
+    }
+    return Promise.resolve();
+  };
+
   const onFinish = async (values) => {
     try {
       setLoading(true);
 
-      // Convert dates to ISO format
+      // Client-side date validation (same as EventForm)
+      const thoiGianBatDau = values.thoiGianBatDau ? new Date(values.thoiGianBatDau) : null;
+      const thoiGianKetThuc = values.thoiGianKetThuc ? new Date(values.thoiGianKetThuc) : null;
+
+      if (thoiGianBatDau && thoiGianKetThuc && thoiGianKetThuc < thoiGianBatDau) {
+        form.setFields([
+          {
+            name: 'thoiGianKetThuc',
+            errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'],
+          },
+        ]);
+        setLoading(false);
+        return;
+      }
+
       const payload = {
         ...values,
-        thoiGianBatDau: values.thoiGianBatDau
-          ? new Date(values.thoiGianBatDau).toISOString()
-          : undefined,
-        thoiGianKetThuc: values.thoiGianKetThuc
-          ? new Date(values.thoiGianKetThuc).toISOString()
-          : undefined,
+        thoiGianBatDau: thoiGianBatDau ? thoiGianBatDau.toISOString() : undefined,
+        thoiGianKetThuc: thoiGianKetThuc ? thoiGianKetThuc.toISOString() : undefined,
       };
 
       if (student?._id) {
@@ -188,32 +213,28 @@ const StudentForm = ({ student, onSuccess }) => {
       onSuccess();
     } catch (error) {
       console.error('Error saving student:', error);
-if (error.response?.status === 400 && error.response.data?.message) {
-  const msg = error.response.data.message;
+      if (error.response?.status === 400 && error.response.data?.message) {
+        const msg = error.response.data.message;
 
-  if (msg.includes('Mã sinh viên đã tồn tại')) {
-    form.setFields([{ name: 'maSV', errors: ['Mã sinh viên đã tồn tại, vui lòng nhập mã khác'] }]);
-  } else if (msg.includes('Mã sinh viên phải đúng 12 ký tự')) {
-    form.setFields([{ name: 'maSV', errors: ['Mã sinh viên phải đúng 12 ký tự'] }]);
-    
-  }
-  else if (
-    msg.includes("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu")
-  ) {
-    form.setFields([
-      {
-        name: "thoiGianKetThuc",
-        errors: ["Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"],
-      },
-    ]);
-  }
-   else {
-    message.error(msg || 'Lỗi server khi lưu sinh viên');
-  }
-
-} else {
-  message.error(error.message || 'Có lỗi xảy ra khi lưu sinh viên');
-}
+        if (msg.includes('Mã sinh viên đã tồn tại')) {
+          form.setFields([
+            { name: 'maSV', errors: ['Mã sinh viên đã tồn tại, vui lòng nhập mã khác'] },
+          ]);
+        } else if (msg.includes('Mã sinh viên phải đúng 12 ký tự')) {
+          form.setFields([{ name: 'maSV', errors: ['Mã sinh viên phải đúng 12 ký tự'] }]);
+        } else if (msg.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
+          form.setFields([
+            {
+              name: 'thoiGianKetThuc',
+              errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'],
+            },
+          ]);
+        } else {
+          message.error(msg || 'Lỗi server khi lưu sinh viên');
+        }
+      } else {
+        message.error(error.message || 'Có lỗi xảy ra khi lưu sinh viên');
+      }
     } finally {
       setLoading(false);
     }
@@ -292,6 +313,7 @@ if (error.response?.status === 400 && error.response.data?.message) {
           onSearch={handleTruongDoiTacSearch}
           placeholder="Chọn hoặc nhập trường đối tác"
           filterOption={filterOption}
+          value={customTruongDoiTac || undefined}
         >
           {truongDoiTacOptions.map((item, idx) => (
             <Option key={idx} value={item}>
@@ -314,6 +336,7 @@ if (error.response?.status === 400 && error.response.data?.message) {
           onSearch={handleQuocGiaSearch}
           placeholder="Chọn hoặc nhập quốc gia"
           filterOption={filterOption}
+          value={customQuocGia || undefined}
         >
           {quocGiaOptions.map((item, idx) => (
             <Option key={idx} value={item}>
@@ -329,13 +352,19 @@ if (error.response?.status === 400 && error.response.data?.message) {
         name="thoiGianBatDau"
         rules={[{ required: true, message: 'Vui lòng nhập thời gian bắt đầu' }]}
       >
-        <Input type="datetime-local" />
+        <Input
+          type="datetime-local"
+          onChange={() => form.validateFields(['thoiGianKetThuc'])}
+        />
       </Form.Item>
 
       <Form.Item
         label="Thời gian kết thúc"
         name="thoiGianKetThuc"
-        rules={[{ required: true, message: 'Vui lòng nhập thời gian kết thúc' }]}
+        rules={[
+          { required: true, message: 'Vui lòng nhập thời gian kết thúc' },
+          { validator: validateEndTime },
+        ]}
       >
         <Input type="datetime-local" />
       </Form.Item>

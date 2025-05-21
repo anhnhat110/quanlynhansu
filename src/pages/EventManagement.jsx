@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Space, Select, Input, Modal } from 'antd';
+import { Table, Button, Space, Select, Input, Modal, Descriptions } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import EventForm from '../components/EventForm';
 import DeleteEventModal from '../components/DeleteEventModal';

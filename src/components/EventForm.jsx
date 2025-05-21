@@ -246,7 +246,7 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomThanhPhan("");
       onSuccess();
     } catch (error) {
-      console.error("Error saving event:", error);
+      console.error(error.message);
       if (error.message.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
         form.setFields([
           {

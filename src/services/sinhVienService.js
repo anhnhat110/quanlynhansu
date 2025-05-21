@@ -6,33 +6,29 @@ export const sinhVienService = {
     const queryParams = new URLSearchParams();
 
     if (params.sort) {
-      queryParams.append('sort', params.sort);
+        queryParams.append('sort', params.sort);
     }
 
     if (params.search) {
-      queryParams.append('search', params.search);
+        queryParams.append('search', params.search);
     }
 
-    if (params.page) {
-      queryParams.append('page', params.page);
-    }
-
-    if (params.limit) {
-      queryParams.append('limit', params.limit);
-    }
-
+    // Log URL và các query params trước khi gọi API
     console.log(`Calling GET /sinhviens with params: ${queryParams.toString()}`);
 
     return apiClient.get('/sinhviens', { params: queryParams })
-      .then(response => {
-        console.log('API response:', response);
-        return response;
-      })
-      .catch(error => {
-        console.error('API request failed:', error);
-        throw error;
-      });
-  },
+        .then(response => {
+            // Log response sau khi nhận được từ API
+            console.log('API response:', response);
+            return response;
+        })
+        .catch(error => {
+            // Log error nếu có lỗi
+            console.error('API request failed:', error);
+            throw error;
+        });
+},
+
 
   // Lấy chi tiết một sinh viên
   getSinhVien: (id) => {
