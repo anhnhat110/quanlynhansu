@@ -27,8 +27,8 @@ const StudentForm = ({ student, onSuccess }) => {
     lop: '',
     truongDoiTac: '',
     quocGia: '',
-    thoiGianBatDau: '',
-    thoiGianKetThuc: '',
+    thoiGianBatDau: undefined, // Sử dụng undefined thay vì ''
+    thoiGianKetThuc: undefined, // Sử dụng undefined thay vì ''
   };
 
   // Fetch truongDoiTac and quocGia options from SinhVien
@@ -63,10 +63,10 @@ const StudentForm = ({ student, onSuccess }) => {
       // Edit mode: Populate form with student data
       const thoiGianBatDau = student.thoiGianBatDau
         ? dayjs(student.thoiGianBatDau).format('YYYY-MM-DDTHH:mm')
-        : '';
+        : undefined; // Sử dụng undefined thay vì ''
       const thoiGianKetThuc = student.thoiGianKetThuc
         ? dayjs(student.thoiGianKetThuc).format('YYYY-MM-DDTHH:mm')
-        : '';
+        : undefined; // Sử dụng undefined thay vì ''
 
       form.setFieldsValue({
         maSV: student.maSV,
@@ -155,16 +155,16 @@ const StudentForm = ({ student, onSuccess }) => {
   };
 
   // Validation function for thoiGianKetThuc
-  const validateEndTime = (_, value) => {
-    if (!value) return Promise.reject(new Error('Vui lòng nhập thời gian kết thúc'));
-    const thoiGianBatDauRaw = form.getFieldValue('thoiGianBatDau');
-    if (!thoiGianBatDauRaw) return Promise.resolve();
+  const validateTimeRange = (_, value) => {
+    const thoiGianBatDau = form.getFieldValue('thoiGianBatDau');
+    const thoiGianKetThuc = value;
 
-    const thoiGianBatDau = new Date(thoiGianBatDauRaw);
-    const thoiGianKetThuc = new Date(value);
-
-    if (thoiGianKetThuc < thoiGianBatDau) {
-      return Promise.reject(new Error('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'));
+    if (thoiGianBatDau && thoiGianKetThuc) {
+      const start = new Date(thoiGianBatDau);
+      const end = new Date(thoiGianKetThuc);
+      if (end < start) {
+        return Promise.reject(new Error('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'));
+      }
     }
     return Promise.resolve();
   };
@@ -173,20 +173,8 @@ const StudentForm = ({ student, onSuccess }) => {
     try {
       setLoading(true);
 
-      // Client-side date validation (same as EventForm)
       const thoiGianBatDau = values.thoiGianBatDau ? new Date(values.thoiGianBatDau) : null;
       const thoiGianKetThuc = values.thoiGianKetThuc ? new Date(values.thoiGianKetThuc) : null;
-
-      if (thoiGianBatDau && thoiGianKetThuc && thoiGianKetThuc < thoiGianBatDau) {
-        form.setFields([
-          {
-            name: 'thoiGianKetThuc',
-            errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'],
-          },
-        ]);
-        setLoading(false);
-        return;
-      }
 
       const payload = {
         ...values,
@@ -222,13 +210,6 @@ const StudentForm = ({ student, onSuccess }) => {
           ]);
         } else if (msg.includes('Mã sinh viên phải đúng 12 ký tự')) {
           form.setFields([{ name: 'maSV', errors: ['Mã sinh viên phải đúng 12 ký tự'] }]);
-        } else if (msg.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
-          form.setFields([
-            {
-              name: 'thoiGianKetThuc',
-              errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'],
-            },
-          ]);
         } else {
           message.error(msg || 'Lỗi server khi lưu sinh viên');
         }
@@ -246,6 +227,8 @@ const StudentForm = ({ student, onSuccess }) => {
       layout="vertical"
       onFinish={onFinish}
       initialValues={initialValues}
+      validateTrigger={['onFinish']} // Chỉ validate khi submit
+      validateOnMount={false} // Không validate khi mount
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item
@@ -352,10 +335,7 @@ const StudentForm = ({ student, onSuccess }) => {
         name="thoiGianBatDau"
         rules={[{ required: true, message: 'Vui lòng nhập thời gian bắt đầu' }]}
       >
-        <Input
-          type="datetime-local"
-          onChange={() => form.validateFields(['thoiGianKetThuc'])}
-        />
+        <Input type="datetime-local" />
       </Form.Item>
 
       <Form.Item
@@ -363,7 +343,7 @@ const StudentForm = ({ student, onSuccess }) => {
         name="thoiGianKetThuc"
         rules={[
           { required: true, message: 'Vui lòng nhập thời gian kết thúc' },
-          { validator: validateEndTime },
+          { validator: validateTimeRange },
         ]}
       >
         <Input type="datetime-local" />

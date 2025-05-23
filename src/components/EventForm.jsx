@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Select, message } from "antd";
 import { v4 as uuidv4 } from "uuid";
@@ -30,7 +29,7 @@ const EventForm = ({ event, onSuccess }) => {
   useEffect(() => {
     const fetchChuyenGias = async () => {
       try {
-        const token = localStorage.getItem('jwt');
+        const token = localStorage.getItem("jwt");
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/chuyengias?fields=hoVaTen`, {
           method: "GET",
           headers: {
@@ -56,10 +55,10 @@ const EventForm = ({ event, onSuccess }) => {
     if (event) {
       const thoiGianBatDau = event.thoiGianBatDau
         ? dayjs(event.thoiGianBatDau).format("YYYY-MM-DDTHH:mm")
-        : "";
+        : undefined; // Sử dụng undefined thay vì ""
       const thoiGianKetThuc = event.thoiGianKetThuc
         ? dayjs(event.thoiGianKetThuc).format("YYYY-MM-DDTHH:mm")
-        : "";
+        : undefined; // Sử dụng undefined thay vì ""
 
       form.setFieldsValue({
         maSK: event.maSK,
@@ -100,8 +99,8 @@ const EventForm = ({ event, onSuccess }) => {
         chuyenGia: "",
         thanhPhan: "",
         diaDiem: "",
-        thoiGianBatDau: "",
-        thoiGianKetThuc: "",
+        thoiGianBatDau: undefined, // Sử dụng undefined thay vì ""
+        thoiGianKetThuc: undefined, // Sử dụng undefined thay vì ""
         ghiChu: "",
       });
       setCustomMucDich("");
@@ -159,24 +158,26 @@ const EventForm = ({ event, onSuccess }) => {
     }
   };
 
+  const validateTimeRange = (_, value) => {
+    const thoiGianBatDau = form.getFieldValue("thoiGianBatDau");
+    const thoiGianKetThuc = value;
+
+    if (thoiGianBatDau && thoiGianKetThuc) {
+      const start = new Date(thoiGianBatDau);
+      const end = new Date(thoiGianKetThuc);
+      if (end < start) {
+        return Promise.reject(new Error("Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"));
+      }
+    }
+    return Promise.resolve();
+  };
+
   const onFinish = async (values) => {
     try {
       setLoading(true);
 
-      // Client-side date validation
       const thoiGianBatDau = values.thoiGianBatDau ? new Date(values.thoiGianBatDau) : null;
       const thoiGianKetThuc = values.thoiGianKetThuc ? new Date(values.thoiGianKetThuc) : null;
-
-      if (thoiGianBatDau && thoiGianKetThuc && thoiGianKetThuc < thoiGianBatDau) {
-        form.setFields([
-          {
-            name: "thoiGianKetThuc",
-            errors: ["Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"],
-          },
-        ]);
-        setLoading(false);
-        return;
-      }
 
       if (!values.maSK) {
         values.maSK = generateMaSK();
@@ -192,9 +193,9 @@ const EventForm = ({ event, onSuccess }) => {
       const guideId = selectedChuyenGia ? selectedChuyenGia._id : values.guides;
       payload.guides = guideId ? [guideId] : [];
 
-      const token = localStorage.getItem('jwt');
+      const token = localStorage.getItem("jwt");
       if (!token) {
-        message.error('Vui lòng đăng nhập để tiếp tục');
+        message.error("Vui lòng đăng nhập để tiếp tục");
         setLoading(false);
         return;
       }
@@ -224,7 +225,7 @@ const EventForm = ({ event, onSuccess }) => {
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to save event');
+        throw new Error(errorData.message || "Failed to save event");
       }
 
       message.success(event?._id ? "Cập nhật sự kiện thành công" : "Thêm mới sự kiện thành công");
@@ -237,8 +238,8 @@ const EventForm = ({ event, onSuccess }) => {
         chuyenGia: "",
         thanhPhan: "",
         diaDiem: "",
-        thoiGianBatDau: "",
-        thoiGianKetThuc: "",
+        thoiGianBatDau: undefined,
+        thoiGianKetThuc: undefined,
         ghiChu: "",
       });
       setCustomMucDich("");
@@ -247,16 +248,7 @@ const EventForm = ({ event, onSuccess }) => {
       onSuccess();
     } catch (error) {
       console.error(error.message);
-      if (error.message.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
-        form.setFields([
-          {
-            name: "thoiGianKetThuc",
-            errors: ["Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu"],
-          },
-        ]);
-      } else {
-        message.error(error.message || 'Có lỗi xảy ra khi lưu sự kiện');
-      }
+      message.error(error.message || "Có lỗi xảy ra khi lưu sự kiện");
     } finally {
       setLoading(false);
     }
@@ -267,6 +259,8 @@ const EventForm = ({ event, onSuccess }) => {
       form={form}
       layout="vertical"
       onFinish={onFinish}
+      validateTrigger={["onFinish"]} // Chỉ validate khi submit
+      validateOnMount={false} // Không validate khi mount
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item label="Mã sự kiện" name="maSK" className="col-span-1">
@@ -338,7 +332,10 @@ const EventForm = ({ event, onSuccess }) => {
       <Form.Item
         label="Thời gian kết thúc"
         name="thoiGianKetThuc"
-        rules={[{ required: true, message: "Vui lòng nhập thời gian kết thúc" }]}
+        rules={[
+          { required: true, message: "Vui lòng nhập thời gian kết thúc" },
+          { validator: validateTimeRange },
+        ]}
       >
         <Input type="datetime-local" />
       </Form.Item>

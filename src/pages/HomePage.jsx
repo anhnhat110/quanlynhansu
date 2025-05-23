@@ -47,7 +47,7 @@ const HomePage = () => {
 
   const fetchRecentExperts = async () => {
     try {
-      const response = await apiClient.get("/chuyengias?limit=5&sort=-createdAt");
+      const response = await apiClient.get("/chuyengias?limit=5&sort=-thoiGianBatDau");
       setRecentExperts(response?.data?.chuyenGias || []);
     } catch (error) {
       console.error("Failed to fetch recent experts:", error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Space, Select, Input, Modal } from "antd";
+import { Table, Button, Space, Select, Input, Modal,Tooltip } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import ChuyenGiaForm from "../components/ChuyenGiaForm";
 import DeleteChuyenGiaModal from "../components/DeleteChuyenGiaModal";
@@ -161,13 +161,15 @@ const ChuyenGiaManagement = () => {
       </div>
 
       <div className="flex gap-4 mb-6">
-        <Input.Search
-          placeholder="Tìm kiếm chuyên gia"
-          style={{ width: 300 }}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onSearch={handleSearch}
-        />
+        <Tooltip title="Nhập tên chuyên gia để tìm kiếm">
+  <Input.Search
+    placeholder="Tìm kiếm chuyên gia"
+    style={{ width: 300 }}
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    onSearch={handleSearch}
+  />
+</Tooltip>
         <Select
           value={sortOrder}
           style={{ width: 200 }}

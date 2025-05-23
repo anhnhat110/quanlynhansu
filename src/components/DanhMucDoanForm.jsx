@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { danhMucDoanService } from '../services/danhMucDoanService';
@@ -14,9 +13,9 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         nguoiDaiDien: doan.nguoiDaiDien,
         hoChieu: doan.hoChieu,
         quocTich: doan.quocTich,
-        DOB: doan.DOB ? new Date(doan.DOB).toISOString().slice(0, 16) : '',
-        thoiGianBatDau: doan.thoiGianBatDau ? new Date(doan.thoiGianBatDau).toISOString().slice(0, 16) : '',
-        thoiGianKetThuc: doan.thoiGianKetThuc ? new Date(doan.thoiGianKetThuc).toISOString().slice(0, 16) : '',
+        DOB: doan.DOB ? new Date(doan.DOB).toISOString().slice(0, 16) : undefined,
+        thoiGianBatDau: doan.thoiGianBatDau ? new Date(doan.thoiGianBatDau).toISOString().slice(0, 16) : undefined,
+        thoiGianKetThuc: doan.thoiGianKetThuc ? new Date(doan.thoiGianKetThuc).toISOString().slice(0, 16) : undefined,
         noiDung: doan.noiDung,
         ghiChu: doan.ghiChu,
       });
@@ -27,30 +26,32 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         nguoiDaiDien: '',
         hoChieu: '',
         quocTich: '',
-        DOB: '',
-        thoiGianBatDau: '',
-        thoiGianKetThuc: '',
+        DOB: undefined,
+        thoiGianBatDau: undefined,
+        thoiGianKetThuc: undefined,
         noiDung: '',
         ghiChu: '',
       });
     }
   }, [doan, form]);
 
+  const validateTimeRange = (_, value) => {
+    const thoiGianBatDau = form.getFieldValue('thoiGianBatDau');
+    const thoiGianKetThuc = value;
+
+    if (thoiGianBatDau && thoiGianKetThuc) {
+      const start = new Date(thoiGianBatDau);
+      const end = new Date(thoiGianKetThuc);
+      if (end < start) {
+        return Promise.reject(new Error('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'));
+      }
+    }
+    return Promise.resolve();
+  };
+
   const onFinish = async (values) => {
     try {
       setLoading(true);
-
-      // Client-side validation for hoChieu
-      if (!/^[A-Za-z0-9]{8}$/.test(values.hoChieu)) {
-        form.setFields([
-          {
-            name: 'hoChieu',
-            errors: ['Hộ chiếu phải có đúng 8 ký tự chữ hoặc số'],
-          },
-        ]);
-        setLoading(false);
-        return;
-      }
 
       const payload = { ...values };
 
@@ -70,9 +71,9 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         nguoiDaiDien: '',
         hoChieu: '',
         quocTich: '',
-        DOB: '',
-        thoiGianBatDau: '',
-        thoiGianKetThuc: '',
+        DOB: undefined,
+        thoiGianBatDau: undefined,
+        thoiGianKetThuc: undefined,
         noiDung: '',
         ghiChu: '',
       });
@@ -83,19 +84,10 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       if (error.response?.status === 400 && error.response.data?.message) {
         const msg = error.response.data.message;
         if (msg.includes('Hộ chiếu đã tồn tại')) {
-          form.setFields([
-            { name: 'hoChieu', errors: ['Hộ chiếu đã tồn tại, vui lòng nhập khác'] }
-          ]);
-        } else if (msg.includes('Hộ chiếu phải có đúng 8 ký tự')) {
-          form.setFields([
-            { name: 'hoChieu', errors: ['Hộ chiếu phải có đúng 8 ký tự chữ hoặc số'] }
-          ]);
+          form.setFields([{ name: 'hoChieu', errors: ['Hộ chiếu đã tồn tại, vui lòng nhập khác'] }]);
         } else if (msg.includes('Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu')) {
           form.setFields([
-            {
-              name: 'thoiGianKetThuc',
-              errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'],
-            },
+            { name: 'thoiGianKetThuc', errors: ['Ngày kết thúc phải lớn hơn hoặc bằng ngày bắt đầu'] },
           ]);
         } else {
           message.error(msg || 'Lỗi server khi lưu đoàn');
@@ -114,6 +106,8 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       layout="vertical"
       onFinish={onFinish}
       initialValues={doan || {}}
+      validateTrigger={['onFinish']} // Chỉ validate khi submit
+      validateOnMount={false} // Không validate khi mount
       className="grid grid-cols-2 gap-4"
     >
       <Form.Item
@@ -136,15 +130,9 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         label="Hộ chiếu"
         name="hoChieu"
         className="col-span-1"
-        rules={[
-          { required: true, message: 'Vui lòng nhập hộ chiếu' },
-          {
-            pattern: /^[A-Za-z0-9]{8}$/,
-            message: 'Hộ chiếu phải có đúng 8 ký tự chữ hoặc số',
-          }
-        ]}
+        rules={[{ required: true, message: 'Vui lòng nhập hộ chiếu' }]}
       >
-        <Input maxLength={8} />
+        <Input />
       </Form.Item>
 
       <Form.Item
@@ -174,7 +162,10 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
       <Form.Item
         label="Thời gian kết thúc"
         name="thoiGianKetThuc"
-        rules={[{ required: true, message: 'Vui lòng nhập thời gian kết thúc' }]}
+        rules={[
+          { required: true, message: 'Vui lòng nhập thời gian kết thúc' },
+          { validator: validateTimeRange },
+        ]}
       >
         <Input type="datetime-local" />
       </Form.Item>
