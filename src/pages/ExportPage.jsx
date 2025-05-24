@@ -24,7 +24,8 @@ const fieldMap = {
   "Chuyên gia": "chuyenGia",
   "Mục đích": "mucDich",
   "Sự kiện": "suKien",
-  "Thời gian": "thoiGian",
+  "Thời gian bắt đầu": "thoiGianBatDau",
+  "Thời gian kết thúc": "thoiGianKetThuc",
   "Địa điểm": "diaDiem",
   "Thành phần": "thanhPhan",
   "Ghi chú (SK)": "ghiChuSK",
@@ -51,7 +52,7 @@ const thongTinChuyenGia = [
 ];
 
 const thongTinSuKien = [
-  "Chuyên gia", "Mục đích", "Sự kiện", "Thời gian",
+  "Chuyên gia", "Mục đích", "Sự kiện", "Thời gian bắt đầu", "Thời gian kết thúc",
   "Địa điểm", "Thành phần", "Ghi chú (SK)",
 ];
 
@@ -80,7 +81,7 @@ export default function ExportPage() {
     quocGia: [],
     chucVu: [],
     mucDich: [],
-    thoiGian: [],
+    thoiGian: [], // Bộ lọc năm
     hinhThuc: [],
     capBac: [],
     truongDoiTac: [],
@@ -92,7 +93,7 @@ export default function ExportPage() {
     quocGia: undefined,
     chucVu: undefined,
     mucDich: undefined,
-    thoiGian: undefined,
+    thoiGian: undefined, // Giá trị năm được chọn
     hinhThuc: undefined,
     capBac: undefined,
     truongDoiTac: undefined,
@@ -160,11 +161,17 @@ export default function ExportPage() {
         const params = new URLSearchParams();
         params.append("fields", fields.join(","));
 
+        // Thêm các bộ lọc vào params
         Object.entries(filterValues).forEach(([key, value]) => {
           if (value && filters[key].length > 0) {
             params.append(key, value);
           }
         });
+
+        // Thêm tham số thoiGian để lọc từ backend
+        if (filterValues.thoiGian && selectedType !== "CG") {
+          params.append("thoiGian", filterValues.thoiGian);
+        }
 
         const url = `${API_URL}/${type}?${params.toString()}`;
         console.log("Fetching data:", url);
@@ -215,7 +222,7 @@ export default function ExportPage() {
             quocGia: prev.quocGia,
             chucVu: undefined,
             mucDich: undefined,
-            thoiGian: undefined,
+            thoiGian: prev.thoiGian,
             hinhThuc: prev.hinhThuc,
             capBac: prev.capBac,
             truongDoiTac: prev.truongDoiTac,
@@ -225,7 +232,7 @@ export default function ExportPage() {
             quocGia: undefined,
             chucVu: undefined,
             mucDich: undefined,
-            thoiGian: undefined,
+            thoiGian: prev.thoiGian,
             hinhThuc: undefined,
             capBac: undefined,
             truongDoiTac: undefined,
@@ -260,43 +267,57 @@ export default function ExportPage() {
             quocTich: [],
           });
         } else if (selectedType === "SK") {
-          const res = await axios.get(`${API_URL}/sukiens?fields=mucDich,thoiGian`);
+          const res = await axios.get(`${API_URL}/sukiens?fields=mucDich,thoiGianBatDau,thoiGianKetThuc`);
           const data = Array.isArray(res.data.data) ? res.data.data : res.data.data.suKiens || [];
+          // Trích xuất danh sách năm từ thoiGianBatDau và thoiGianKetThuc
+          const years = [...new Set([
+            ...data.map(item => item.thoiGianBatDau ? new Date(item.thoiGianBatDau).getFullYear() : null),
+            ...data.map(item => item.thoiGianKetThuc ? new Date(item.thoiGianKetThuc).getFullYear() : null),
+          ])].filter(Boolean).sort();
           setFilters({
             truongDonVi: [],
             quocGia: [],
             chucVu: [],
             mucDich: unique(data, "mucDich"),
-            thoiGian: [...new Set(data.map(item => item.thoiGian ? new Date(item.thoiGian).getFullYear() : null))]
-              .filter(Boolean).sort().map(year => year.toString()),
+            thoiGian: years.map(year => year.toString()),
             hinhThuc: [],
             capBac: [],
             truongDoiTac: [],
             quocTich: [],
           });
         } else if (selectedType === "SV") {
-          const res = await axios.get(`${API_URL}/sinhviens?fields=hinhThuc,capBac,quocGia,truongDoiTac`);
+          const res = await axios.get(`${API_URL}/sinhviens?fields=hinhThuc,capBac,quocGia,truongDoiTac,thoiGianBatDau,thoiGianKetThuc`);
           const data = Array.isArray(res.data.data) ? res.data.data : res.data.data.sinhViens || [];
+          // Trích xuất danh sách năm từ thoiGianBatDau và thoiGianKetThuc
+          const years = [...new Set([
+            ...data.map(item => item.thoiGianBatDau ? new Date(item.thoiGianBatDau).getFullYear() : null),
+            ...data.map(item => item.thoiGianKetThuc ? new Date(item.thoiGianKetThuc).getFullYear() : null),
+          ])].filter(Boolean).sort();
           setFilters({
             truongDonVi: [],
             quocGia: unique(data, "quocGia"),
             chucVu: [],
             mucDich: [],
-            thoiGian: [],
+            thoiGian: years.map(year => year.toString()),
             hinhThuc: unique(data, "hinhThuc"),
             capBac: unique(data, "capBac"),
             truongDoiTac: unique(data, "truongDoiTac"),
             quocTich: [],
           });
         } else if (selectedType === "Doan") {
-          const res = await axios.get(`${API_URL}/danhmucdoans?fields=quocTich`);
+          const res = await axios.get(`${API_URL}/danhmucdoans?fields=quocTich,thoiGianBatDau,thoiGianKetThuc`);
           const data = Array.isArray(res.data.data) ? res.data.data : res.data.data.danhMucDoans || [];
+          // Trích xuất danh sách năm từ thoiGianBatDau và thoiGianKetThuc
+          const years = [...new Set([
+            ...data.map(item => item.thoiGianBatDau ? new Date(item.thoiGianBatDau).getFullYear() : null),
+            ...data.map(item => item.thoiGianKetThuc ? new Date(item.thoiGianKetThuc).getFullYear() : null),
+          ])].filter(Boolean).sort();
           setFilters({
             truongDonVi: [],
             quocGia: [],
             chucVu: [],
             mucDich: [],
-            thoiGian: [],
+            thoiGian: years.map(year => year.toString()),
             hinhThuc: [],
             capBac: [],
             truongDoiTac: [],
@@ -329,7 +350,7 @@ export default function ExportPage() {
       dataIndex: fieldMap[label],
       key: fieldMap[label],
       render: (text) => {
-        if (["thoiGian", "thoiGianBatDau", "thoiGianKetThuc", "DOB"].includes(fieldMap[label])) {
+        if (["thoiGianBatDau", "thoiGianKetThuc", "DOB"].includes(fieldMap[label])) {
           return text ? dayjs(text).format("DD/MM/YYYY") : "-";
         }
         return text || "-";
@@ -345,7 +366,7 @@ export default function ExportPage() {
       const obj = {};
       selectedFields.forEach(label => {
         const key = fieldMap[label];
-        obj[label] = ["thoiGian", "thoiGianBatDau", "thoiGianKetThuc", "DOB"].includes(key)
+        obj[label] = ["thoiGianBatDau", "thoiGianKetThuc", "DOB"].includes(key)
           ? (row[key] ? dayjs(row[key]).format("DD/MM/YYYY") : "")
           : (row[key] ?? "");
       });

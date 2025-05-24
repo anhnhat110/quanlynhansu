@@ -71,7 +71,22 @@ const ResetPasswordPage = () => {
             <Form.Item
               label="Mật khẩu mới"
               name="password"
-              rules={[{ required: true, message: 'Vui lòng nhập mật khẩu mới!' }]}>
+              rules={[
+                              { required: true, message: 'Hãy nhập mật khẩu mới!' },
+                              { min: 8, message: 'Mật khẩu mới phải có ít nhất 8 ký tự.' },
+                              {
+                                validator(_, value) {
+                                  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+                                  if (value && !passwordRegex.test(value)) {
+                                    return Promise.reject(
+                                      new Error('Mật khẩu mới phải bao gồm chữ hoa, chữ thường và số.')
+                                    );
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
               <Input.Password placeholder="Mật khẩu mới" size="large" />
             </Form.Item>
             <Form.Item
@@ -85,7 +100,7 @@ const ResetPasswordPage = () => {
                     if (!value || getFieldValue('password') === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('Mật khẩu không khớp!'));
+                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
                   },
                 }),
               ]}>
