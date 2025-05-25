@@ -75,27 +75,14 @@ const Account = () => {
     fetchUser();
   }, []);
 
-  // Theo dõi thay đổi trong form
-  useEffect(() => {
-    const handleFieldsChange = () => {
-      const currentValues = profileForm.getFieldsValue();
-      const hasChanged =
-        currentValues.name !== initialValues.name ||
-        currentValues.email !== initialValues.email;
-      setIsProfileChanged(hasChanged);
-    };
-
-    // Lắng nghe sự thay đổi của form
-    profileForm.onFieldsChange = handleFieldsChange;
-
-    // Gọi lần đầu để kiểm tra trạng thái ban đầu
-    handleFieldsChange();
-
-    // Cleanup để tránh memory leak
-    return () => {
-      profileForm.onFieldsChange = undefined;
-    };
-  }, [initialValues, profileForm]);
+  // Hàm xử lý thay đổi của form
+  const handleFieldsChange = () => {
+    const currentValues = profileForm.getFieldsValue();
+    const hasChanged =
+      currentValues.name !== initialValues.name ||
+      currentValues.email !== initialValues.email;
+    setIsProfileChanged(hasChanged);
+  };
 
   // Handle profile update
   const handleUpdateProfile = async (values) => {
@@ -184,6 +171,7 @@ const Account = () => {
             form={profileForm}
             layout="vertical"
             onFinish={handleUpdateProfile}
+            onFieldsChange={handleFieldsChange} // Sử dụng prop onFieldsChange của Form
           >
             <Form.Item
               name="name"

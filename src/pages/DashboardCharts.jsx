@@ -108,7 +108,6 @@ const CustomTooltip = ({ active, payload, label, chartType }) => {
 
 const DashboardCharts = () => {
   const [eventsByTime, setEventsByTime] = useState([]);
-  const [expertsByGenderCountry, setExpertsByGenderCountry] = useState([]);
   const [expertsByCountryTreemap, setExpertsByCountryTreemap] = useState([]);
   const [topTruongDonVi, setTopTruongDonVi] = useState([]);
   const [topExpertsByEvent, setTopExpertsByEvent] = useState([]);
@@ -195,7 +194,6 @@ const DashboardCharts = () => {
           };
           expertGenderMap[country][gender] += 1;
         });
-        setExpertsByGenderCountry(Object.values(expertGenderMap));
 
         // Experts by country
         const expertCountryMap = chuyenGias.reduce((acc, cg) => {

@@ -113,10 +113,12 @@ const StudentManagement = () => {
       title: 'Quốc gia',
       dataIndex: 'quocGia',
       key: 'quocGia',
+      width:150,
     },
     {
       title: 'Thời gian',
       key: 'thoiGian',
+      width: 200,
      render: (_, record) => {
         const batDau = new Date(record.thoiGianBatDau).toLocaleDateString();
         const ketThuc = new Date(record.thoiGianKetThuc).toLocaleDateString();
