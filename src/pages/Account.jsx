@@ -1,15 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Card, Typography, message, Space } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 
 const { Title } = Typography;
 
 const Account = () => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
+  const [isProfileChanged, setIsProfileChanged] = useState(false); // Theo dõi thay đổi
+  const [initialValues, setInitialValues] = useState({ name: "", email: "" }); // Giá trị ban đầu
   const navigate = useNavigate();
   const [profileForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
@@ -36,6 +37,11 @@ const Account = () => {
           name: parsedUser.name,
           email: parsedUser.email,
         });
+        // Lưu giá trị ban đầu
+        setInitialValues({
+          name: parsedUser.name || "",
+          email: parsedUser.email || "",
+        });
       }
 
       // Optionally fetch fresh data from backend (uncomment if /me endpoint exists)
@@ -47,6 +53,10 @@ const Account = () => {
       profileForm.setFieldsValue({
         name: fetchedUser.name,
         email: fetchedUser.email,
+      });
+      setInitialValues({
+        name: fetchedUser.name || "",
+        email: fetchedUser.email || "",
       });
       localStorage.setItem('user', JSON.stringify(fetchedUser));
       */
@@ -65,24 +75,52 @@ const Account = () => {
     fetchUser();
   }, []);
 
+  // Theo dõi thay đổi trong form
+  useEffect(() => {
+    const handleFieldsChange = () => {
+      const currentValues = profileForm.getFieldsValue();
+      const hasChanged =
+        currentValues.name !== initialValues.name ||
+        currentValues.email !== initialValues.email;
+      setIsProfileChanged(hasChanged);
+    };
+
+    // Lắng nghe sự thay đổi của form
+    profileForm.onFieldsChange = handleFieldsChange;
+
+    // Gọi lần đầu để kiểm tra trạng thái ban đầu
+    handleFieldsChange();
+
+    // Cleanup để tránh memory leak
+    return () => {
+      profileForm.onFieldsChange = undefined;
+    };
+  }, [initialValues, profileForm]);
+
   // Handle profile update
   const handleUpdateProfile = async (values) => {
-  setLoadingProfile(true);
-  try {
-    const token = localStorage.getItem("jwt");
-    const response = await axios.patch(
-      `${API_BASE_URL}/users/updateMe`,
-      values,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    const updatedUser = response.data.data.user;
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    window.dispatchEvent(new Event("storage")); // <== Đồng bộ Header
-    message.success("Cập nhật thông tin thành công");
-    profileForm.setFieldsValue({
-      name: updatedUser.name,
-      email: updatedUser.email,
-    });
+    setLoadingProfile(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const response = await axios.patch(
+        `${API_BASE_URL}/users/updateMe`,
+        values,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const updatedUser = response.data.data.user;
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      window.dispatchEvent(new Event("storage")); // Đồng bộ Header
+      message.success("Cập nhật thông tin thành công");
+      profileForm.setFieldsValue({
+        name: updatedUser.name,
+        email: updatedUser.email,
+      });
+      // Cập nhật lại giá trị ban đầu sau khi cập nhật thành công
+      setInitialValues({
+        name: updatedUser.name || "",
+        email: updatedUser.email || "",
+      });
+      setIsProfileChanged(false); // Reset trạng thái thay đổi
     } catch (error) {
       console.error("Error updating profile:", error);
       const errorMessage =
@@ -165,7 +203,12 @@ const Account = () => {
               <Input prefix={<UserOutlined />} placeholder="Email" />
             </Form.Item>
             <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loadingProfile}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loadingProfile}
+                disabled={!isProfileChanged} // Vô hiệu hóa nếu không có thay đổi
+              >
                 Cập nhật thông tin
               </Button>
             </Form.Item>
@@ -197,28 +240,11 @@ const Account = () => {
               rules={[
                 { required: true, message: "Vui lòng nhập mật khẩu mới" },
                 {
-                  validator: (_, value) => {
-                    if (!value) {
-                      return Promise.resolve(); // Required rule will handle empty
-                    }
-                    if (value.length < 8) {
+                  validator(_, value) {
+                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+                    if (value && !passwordRegex.test(value)) {
                       return Promise.reject(
-                        new Error("Mật khẩu phải có ít nhất 8 ký tự")
-                      );
-                    }
-                    if (!/[a-z]/.test(value)) {
-                      return Promise.reject(
-                        new Error("Mật khẩu phải chứa ít nhất 1 chữ thường")
-                      );
-                    }
-                    if (!/[A-Z]/.test(value)) {
-                      return Promise.reject(
-                        new Error("Mật khẩu phải chứa ít nhất 1 chữ hoa")
-                      );
-                    }
-                    if (!/[0-9]/.test(value)) {
-                      return Promise.reject(
-                        new Error("Mật khẩu phải chứa ít nhất 1 số")
+                        new Error('Mật khẩu phải bao gồm chữ hoa, chữ thường và số.')
                       );
                     }
                     return Promise.resolve();

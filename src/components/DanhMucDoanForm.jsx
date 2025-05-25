@@ -13,7 +13,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         nguoiDaiDien: doan.nguoiDaiDien,
         hoChieu: doan.hoChieu,
         quocTich: doan.quocTich,
-        DOB: doan.DOB ? new Date(doan.DOB).toISOString().slice(0, 16) : undefined,
+        DOB: doan.DOB ? new Date(doan.DOB).toISOString().split('T')[0] : undefined, // Chỉ lấy phần ngày
         thoiGianBatDau: doan.thoiGianBatDau ? new Date(doan.thoiGianBatDau).toISOString().slice(0, 16) : undefined,
         thoiGianKetThuc: doan.thoiGianKetThuc ? new Date(doan.thoiGianKetThuc).toISOString().slice(0, 16) : undefined,
         noiDung: doan.noiDung,
@@ -148,7 +148,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         name="DOB"
         rules={[{ required: true, message: 'Vui lòng nhập ngày sinh' }]}
       >
-        <Input type="datetime-local" />
+        <Input type="date" /> {/* Thay đổi từ datetime-local thành date */}
       </Form.Item>
 
       <Form.Item
