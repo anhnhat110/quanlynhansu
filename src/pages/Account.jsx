@@ -9,8 +9,8 @@ const { Title } = Typography;
 const Account = () => {
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [loadingPassword, setLoadingPassword] = useState(false);
-  const [isProfileChanged, setIsProfileChanged] = useState(false); // Theo dõi thay đổi
-  const [initialValues, setInitialValues] = useState({ name: "", email: "" }); // Giá trị ban đầu
+  const [initialValues, setInitialValues] = useState({ name: "", email: "" });
+  const [isProfileChanged, setIsProfileChanged] = useState(false);
   const navigate = useNavigate();
   const [profileForm] = Form.useForm();
   const [passwordForm] = Form.useForm();
@@ -29,37 +29,16 @@ const Account = () => {
         return;
       }
 
-      // Get user from localStorage
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
-        profileForm.setFieldsValue({
-          name: parsedUser.name,
-          email: parsedUser.email,
-        });
-        // Lưu giá trị ban đầu
-        setInitialValues({
+        const userData = {
           name: parsedUser.name || "",
           email: parsedUser.email || "",
-        });
+        };
+        profileForm.setFieldsValue(userData);
+        setInitialValues(userData);
       }
-
-      // Optionally fetch fresh data from backend (uncomment if /me endpoint exists)
-      /*
-      const response = await axios.get(`${API_BASE_URL}/api/v1/users/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const fetchedUser = response.data.data.user;
-      profileForm.setFieldsValue({
-        name: fetchedUser.name,
-        email: fetchedUser.email,
-      });
-      setInitialValues({
-        name: fetchedUser.name || "",
-        email: fetchedUser.email || "",
-      });
-      localStorage.setItem('user', JSON.stringify(fetchedUser));
-      */
     } catch (error) {
       console.error("Error fetching user:", error);
       message.error("Không thể tải thông tin người dùng");
@@ -78,6 +57,7 @@ const Account = () => {
   // Hàm xử lý thay đổi của form
   const handleFieldsChange = () => {
     const currentValues = profileForm.getFieldsValue();
+    console.log("Current values:", currentValues); // Debug: Kiểm tra giá trị hiện tại
     const hasChanged =
       currentValues.name !== initialValues.name ||
       currentValues.email !== initialValues.email;
@@ -89,25 +69,29 @@ const Account = () => {
     setLoadingProfile(true);
     try {
       const token = localStorage.getItem("jwt");
+      console.log("Payload sent to API:", values); // Debug: Kiểm tra payload gửi lên
       const response = await axios.patch(
         `${API_BASE_URL}/users/updateMe`,
         values,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const updatedUser = response.data.data.user;
+      console.log("Updated user from API:", updatedUser); // Debug response
+
+      // Cập nhật localStorage
       localStorage.setItem("user", JSON.stringify(updatedUser));
-      window.dispatchEvent(new Event("storage")); // Đồng bộ Header
-      message.success("Cập nhật thông tin thành công");
-      profileForm.setFieldsValue({
-        name: updatedUser.name,
-        email: updatedUser.email,
-      });
-      // Cập nhật lại giá trị ban đầu sau khi cập nhật thành công
-      setInitialValues({
+      window.dispatchEvent(new Event("storage"));
+
+      // Cập nhật form với dữ liệu mới
+      const updatedData = {
         name: updatedUser.name || "",
         email: updatedUser.email || "",
-      });
-      setIsProfileChanged(false); // Reset trạng thái thay đổi
+      };
+      profileForm.setFieldsValue(updatedData);
+      setInitialValues(updatedData);
+      setIsProfileChanged(false);
+
+      message.success("Cập nhật thông tin thành công");
     } catch (error) {
       console.error("Error updating profile:", error);
       const errorMessage =
@@ -171,7 +155,7 @@ const Account = () => {
             form={profileForm}
             layout="vertical"
             onFinish={handleUpdateProfile}
-            onFieldsChange={handleFieldsChange} // Sử dụng prop onFieldsChange của Form
+            onFieldsChange={handleFieldsChange}
           >
             <Form.Item
               name="name"
@@ -195,7 +179,7 @@ const Account = () => {
                 type="primary"
                 htmlType="submit"
                 loading={loadingProfile}
-                disabled={!isProfileChanged} // Vô hiệu hóa nếu không có thay đổi
+                disabled={!isProfileChanged}
               >
                 Cập nhật thông tin
               </Button>
@@ -228,11 +212,28 @@ const Account = () => {
               rules={[
                 { required: true, message: "Vui lòng nhập mật khẩu mới" },
                 {
-                  validator(_, value) {
-                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
-                    if (value && !passwordRegex.test(value)) {
+                  validator: (_, value) => {
+                    if (!value) {
+                      return Promise.resolve();
+                    }
+                    if (value.length < 8) {
                       return Promise.reject(
-                        new Error('Mật khẩu phải bao gồm chữ hoa, chữ thường và số.')
+                        new Error("Mật khẩu phải có ít nhất 8 ký tự")
+                      );
+                    }
+                    if (!/[a-z]/.test(value)) {
+                      return Promise.reject(
+                        new Error("Mật khẩu phải chứa ít nhất 1 chữ thường")
+                      );
+                    }
+                    if (!/[A-Z]/.test(value)) {
+                      return Promise.reject(
+                        new Error("Mật khẩu phải chứa ít nhất 1 chữ hoa")
+                      );
+                    }
+                    if (!/[0-9]/.test(value)) {
+                      return Promise.reject(
+                        new Error("Mật khẩu phải chứa ít nhất 1 số")
                       );
                     }
                     return Promise.resolve();

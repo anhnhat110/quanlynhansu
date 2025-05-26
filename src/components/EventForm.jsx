@@ -12,6 +12,8 @@ const EventForm = ({ event, onSuccess }) => {
   const [customMucDich, setCustomMucDich] = useState("");
   const [customChuyenGia, setCustomChuyenGia] = useState("");
   const [customThanhPhan, setCustomThanhPhan] = useState("");
+  const [isFormChanged, setIsFormChanged] = useState(false); // Thêm state để theo dõi thay đổi
+  const [initialFormValues, setInitialFormValues] = useState({}); // Lưu giá trị ban đầu của form
 
   const mucDichOptions = [
     "Cập nhật kỹ năng",
@@ -55,10 +57,25 @@ const EventForm = ({ event, onSuccess }) => {
     if (event) {
       const thoiGianBatDau = event.thoiGianBatDau
         ? dayjs(event.thoiGianBatDau).format("YYYY-MM-DDTHH:mm")
-        : undefined; // Sử dụng undefined thay vì ""
+        : undefined;
       const thoiGianKetThuc = event.thoiGianKetThuc
         ? dayjs(event.thoiGianKetThuc).format("YYYY-MM-DDTHH:mm")
-        : undefined; // Sử dụng undefined thay vì ""
+        : undefined;
+
+      // Lưu giá trị ban đầu để so sánh
+      const initialValues = {
+        maSK: event.maSK || "",
+        chuyenGia: event.chuyenGia || "",
+        mucDich: event.mucDich || "",
+        suKien: event.suKien || "",
+        thoiGianBatDau: thoiGianBatDau || undefined,
+        thoiGianKetThuc: thoiGianKetThuc || undefined,
+        diaDiem: event.diaDiem || "",
+        thanhPhan: event.thanhPhan || "",
+        ghiChu: event.ghiChu || "",
+        guides: event.guides?.[0] || undefined,
+      };
+      setInitialFormValues(initialValues);
 
       form.setFieldsValue({
         maSK: event.maSK,
@@ -90,6 +107,8 @@ const EventForm = ({ event, onSuccess }) => {
       } else {
         setCustomThanhPhan("");
       }
+
+      setIsFormChanged(false); // Ban đầu không có thay đổi
     } else {
       form.resetFields();
       form.setFieldsValue({
@@ -99,15 +118,35 @@ const EventForm = ({ event, onSuccess }) => {
         chuyenGia: "",
         thanhPhan: "",
         diaDiem: "",
-        thoiGianBatDau: undefined, // Sử dụng undefined thay vì ""
-        thoiGianKetThuc: undefined, // Sử dụng undefined thay vì ""
+        thoiGianBatDau: undefined,
+        thoiGianKetThuc: undefined,
         ghiChu: "",
       });
       setCustomMucDich("");
       setCustomChuyenGia("");
       setCustomThanhPhan("");
+      setInitialFormValues({});
+      setIsFormChanged(false);
     }
   }, [event, form, chuyenGiaOptions]);
+
+  // Hàm kiểm tra thay đổi của form
+  const handleFieldsChange = () => {
+    if (!event) return; // Chỉ kiểm tra khi chỉnh sửa
+
+    const currentValues = form.getFieldsValue();
+    const hasFormChanged = Object.keys(initialFormValues).some((key) => {
+      const initialValue = initialFormValues[key];
+      const currentValue = currentValues[key];
+      // So sánh các giá trị, xử lý trường hợp undefined
+      if (key === "thoiGianBatDau" || key === "thoiGianKetThuc") {
+        return initialValue !== currentValue;
+      }
+      return (initialValue || "") !== (currentValue || "");
+    });
+
+    setIsFormChanged(hasFormChanged);
+  };
 
   const handleSelectChange = (field, value) => {
     if (field === "mucDich") {
@@ -135,6 +174,7 @@ const EventForm = ({ event, onSuccess }) => {
         form.setFieldValue("thanhPhan", value);
       }
     }
+    handleFieldsChange(); // Kiểm tra thay đổi sau khi select
   };
 
   const handleMucDichSearch = (value) => {
@@ -142,6 +182,7 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomMucDich(value);
       form.setFieldValue("mucDich", value);
     }
+    handleFieldsChange();
   };
 
   const handleChuyenGiaSearch = (value) => {
@@ -149,6 +190,7 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomChuyenGia(value);
       form.setFieldValue("chuyenGia", value);
     }
+    handleFieldsChange();
   };
 
   const handleThanhPhanSearch = (value) => {
@@ -156,6 +198,7 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomThanhPhan(value);
       form.setFieldValue("thanhPhan", value);
     }
+    handleFieldsChange();
   };
 
   const validateTimeRange = (_, value) => {
@@ -245,6 +288,8 @@ const EventForm = ({ event, onSuccess }) => {
       setCustomMucDich("");
       setCustomChuyenGia("");
       setCustomThanhPhan("");
+      setIsFormChanged(false);
+      setInitialFormValues({});
       onSuccess();
     } catch (error) {
       console.error(error.message);
@@ -259,9 +304,10 @@ const EventForm = ({ event, onSuccess }) => {
       form={form}
       layout="vertical"
       onFinish={onFinish}
-      validateTrigger={["onFinish"]} // Chỉ validate khi submit
-      validateOnMount={false} // Không validate khi mount
+      validateTrigger={["onFinish"]}
+      validateOnMount={false}
       className="grid grid-cols-2 gap-4"
+      onValuesChange={handleFieldsChange} // Theo dõi thay đổi của form
     >
       <Form.Item label="Mã sự kiện" name="maSK" className="col-span-1">
         <Input disabled className="bg-gray-100" />
@@ -376,7 +422,12 @@ const EventForm = ({ event, onSuccess }) => {
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          disabled={event ? !isFormChanged : false} // Disable nút "Cập nhật" nếu không có thay đổi
+        >
           {event?._id ? "Cập nhật" : "Lưu"}
         </Button>
       </Form.Item>

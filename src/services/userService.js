@@ -64,11 +64,11 @@ const userService = {
     }
   },
 
-  resetPassword: async ({ token, password, passwordConfirm }) => {
+  resetPassword: async ({ token, matkhau, matkhauXacNhan }) => {
     try {
       const response = await axios.patch(`${API_URL}/resetPassword/${token}`, {
-        password,
-        passwordConfirm
+        matkhau,
+        matkhauXacNhan,
       }, {
         withCredentials: true,
         timeout: 10000,

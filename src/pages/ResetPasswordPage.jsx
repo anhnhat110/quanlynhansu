@@ -58,7 +58,7 @@ const ResetPasswordPage = () => {
           className="w-24 h-24 mb-6 rounded-full shadow-lg bg-white p-2"
         />
         <Title level={2} className="!text-white !mb-2">
-        HỆ THỐNG QUẢN LÝ THÔNG TIN CÁC CHUYÊN GIA NƯỚC NGOÀI
+          HỆ THỐNG QUẢN LÝ CÁC THÔNG TIN HỢP TÁC QUỐC TẾ 
         </Title>
         <Text className="text-lg font-medium">
           Đại học Đà Nẵng - Trường Đại học Kinh Tế

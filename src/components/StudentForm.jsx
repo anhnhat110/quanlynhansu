@@ -14,6 +14,8 @@ const StudentForm = ({ student, onSuccess }) => {
   const [customQuocGia, setCustomQuocGia] = useState('');
   const [searchTruongDoiTac, setSearchTruongDoiTac] = useState('');
   const [searchQuocGia, setSearchQuocGia] = useState('');
+  const [isFormChanged, setIsFormChanged] = useState(false); // Thêm state để theo dõi thay đổi
+  const [initialFormValues, setInitialFormValues] = useState({}); // Lưu giá trị ban đầu của form
 
   const hinhThucOptions = ['Trao đổi', 'Chuyển tiếp'];
   const capBacOptions = ['Đại học', 'Sau đại học'];
@@ -27,8 +29,8 @@ const StudentForm = ({ student, onSuccess }) => {
     lop: '',
     truongDoiTac: '',
     quocGia: '',
-    thoiGianBatDau: undefined, // Sử dụng undefined thay vì ''
-    thoiGianKetThuc: undefined, // Sử dụng undefined thay vì ''
+    thoiGianBatDau: undefined,
+    thoiGianKetThuc: undefined,
   };
 
   // Fetch truongDoiTac and quocGia options from SinhVien
@@ -62,11 +64,26 @@ const StudentForm = ({ student, onSuccess }) => {
     if (student) {
       // Edit mode: Populate form with student data
       const thoiGianBatDau = student.thoiGianBatDau
-        ? dayjs(student.thoiGianBatDau).format('YYYY-MM-DDTHH:mm')
-        : undefined; // Sử dụng undefined thay vì ''
+        ? dayjs(student.thoiGianBatDau).format('YYYY-MM-DD')
+        : undefined;
       const thoiGianKetThuc = student.thoiGianKetThuc
-        ? dayjs(student.thoiGianKetThuc).format('YYYY-MM-DDTHH:mm')
-        : undefined; // Sử dụng undefined thay vì ''
+        ? dayjs(student.thoiGianKetThuc).format('YYYY-MM-DD')
+        : undefined;
+
+      // Lưu giá trị ban đầu để so sánh
+      const initialValues = {
+        maSV: student.maSV || '',
+        hoVaTen: student.hoVaTen || '',
+        hinhThuc: student.hinhThuc || '',
+        capBac: student.capBac || '',
+        chuyenNganh: student.chuyenNganh || '',
+        lop: student.lop || '',
+        truongDoiTac: student.truongDoiTac || '',
+        quocGia: student.quocGia || '',
+        thoiGianBatDau: thoiGianBatDau || undefined,
+        thoiGianKetThuc: thoiGianKetThuc || undefined,
+      };
+      setInitialFormValues(initialValues);
 
       form.setFieldsValue({
         maSV: student.maSV,
@@ -80,6 +97,8 @@ const StudentForm = ({ student, onSuccess }) => {
         thoiGianBatDau,
         thoiGianKetThuc,
       });
+
+      setIsFormChanged(false); // Ban đầu không có thay đổi
     } else {
       // Create mode: Reset form
       form.resetFields();
@@ -87,6 +106,8 @@ const StudentForm = ({ student, onSuccess }) => {
       setCustomQuocGia('');
       setSearchTruongDoiTac('');
       setSearchQuocGia('');
+      setInitialFormValues({});
+      setIsFormChanged(false);
     }
   }, [student, form]);
 
@@ -103,6 +124,24 @@ const StudentForm = ({ student, onSuccess }) => {
       );
     }
   }, [student, truongDoiTacOptions, quocGiaOptions]);
+
+  // Hàm kiểm tra thay đổi của form
+  const handleFieldsChange = () => {
+    if (!student) return; // Chỉ kiểm tra khi chỉnh sửa
+
+    const currentValues = form.getFieldsValue();
+    const hasFormChanged = Object.keys(initialFormValues).some((key) => {
+      const initialValue = initialFormValues[key];
+      const currentValue = currentValues[key];
+      // So sánh các giá trị, xử lý trường hợp undefined
+      if (key === 'thoiGianBatDau' || key === 'thoiGianKetThuc') {
+        return initialValue !== currentValue;
+      }
+      return (initialValue || '') !== (currentValue || '');
+    });
+
+    setIsFormChanged(hasFormChanged);
+  };
 
   // Handle Select changes
   const handleSelectChange = (field, value) => {
@@ -123,6 +162,7 @@ const StudentForm = ({ student, onSuccess }) => {
         setCustomQuocGia('');
       }
     }
+    handleFieldsChange(); // Kiểm tra thay đổi sau khi select
   };
 
   // Handle search input
@@ -135,6 +175,7 @@ const StudentForm = ({ student, onSuccess }) => {
       form.setFieldValue('truongDoiTac', value);
       setCustomTruongDoiTac(value);
     }
+    handleFieldsChange();
   };
 
   const handleQuocGiaSearch = (value) => {
@@ -146,6 +187,7 @@ const StudentForm = ({ student, onSuccess }) => {
       form.setFieldValue('quocGia', value);
       setCustomQuocGia(value);
     }
+    handleFieldsChange();
   };
 
   // Custom filter function for Select
@@ -198,6 +240,8 @@ const StudentForm = ({ student, onSuccess }) => {
       setCustomQuocGia('');
       setSearchTruongDoiTac('');
       setSearchQuocGia('');
+      setIsFormChanged(false);
+      setInitialFormValues({});
       onSuccess();
     } catch (error) {
       console.error('Error saving student:', error);
@@ -227,15 +271,30 @@ const StudentForm = ({ student, onSuccess }) => {
       layout="vertical"
       onFinish={onFinish}
       initialValues={initialValues}
-      validateTrigger={['onFinish']} // Chỉ validate khi submit
-      validateOnMount={false} // Không validate khi mount
+      validateTrigger={['onFinish']}
+      validateOnMount={false}
       className="grid grid-cols-2 gap-4"
+      onValuesChange={handleFieldsChange} // Theo dõi thay đổi của form
     >
       <Form.Item
         label="Mã sinh viên"
         name="maSV"
         className="col-span-1"
-        rules={[{ required: true, message: 'Vui lòng nhập mã sinh viên' }]}
+        rules={[
+          { required: true, message: 'Vui lòng nhập mã sinh viên' },
+          {
+            validator: (_, value) => {
+              if (!value || value.length === 0) return Promise.resolve();
+              if (value.length !== 12) {
+                return Promise.reject(new Error('Mã sinh viên phải đúng 12 ký tự'));
+              }
+              if (!/^\d+$/.test(value)) {
+                return Promise.reject(new Error('Mã sinh viên chỉ được chứa số'));
+              }
+              return Promise.resolve();
+            },
+          },
+        ]}
       >
         <Input />
       </Form.Item>
@@ -335,7 +394,7 @@ const StudentForm = ({ student, onSuccess }) => {
         name="thoiGianBatDau"
         rules={[{ required: true, message: 'Vui lòng nhập thời gian bắt đầu' }]}
       >
-        <Input type="datetime-local" />
+        <Input type="date" />
       </Form.Item>
 
       <Form.Item
@@ -346,11 +405,16 @@ const StudentForm = ({ student, onSuccess }) => {
           { validator: validateTimeRange },
         ]}
       >
-        <Input type="datetime-local" />
+        <Input type="date" />
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          disabled={student ? !isFormChanged : false} // Disable nút "Cập nhật" nếu không có thay đổi
+        >
           {student?.maSV ? 'Cập nhật' : 'Lưu'}
         </Button>
       </Form.Item>

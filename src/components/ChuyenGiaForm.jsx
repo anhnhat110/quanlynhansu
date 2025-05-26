@@ -21,6 +21,9 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
   const [searchTruongDonVi, setSearchTruongDonVi] = useState("");
   const [fileList, setFileList] = useState([]);
   const [hoChieuBase64, setHoChieuBase64] = useState("");
+  const [isFormChanged, setIsFormChanged] = useState(false); // Thêm state để theo dõi thay đổi
+  const [initialFormValues, setInitialFormValues] = useState({}); // Lưu giá trị ban đầu của form
+  const [initialHoChieuBase64, setInitialHoChieuBase64] = useState(""); // Lưu giá trị ban đầu của ảnh
 
   const generateMaCG = () => "CG-" + uuidv4().slice(0, 4).toUpperCase();
 
@@ -47,6 +50,23 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
 
   useEffect(() => {
     if (chuyengia) {
+      // Khi chỉnh sửa, lưu giá trị ban đầu để so sánh
+      const initialValues = {
+        maCG: chuyengia.maCG || "",
+        hoVaTen: chuyengia.hoVaTen || "",
+        email: chuyengia.email || "",
+        gioiTinh: chuyengia.gioiTinh || "",
+        quocGia: chuyengia.quocGia || "",
+        truongDonVi: chuyengia.truongDonVi || "",
+        chucDanh: chuyengia.chucDanh || "",
+        chucVu: chuyengia.chucVu || "",
+        chuyenNganh: chuyengia.chuyenNganh || "",
+        hoChieu: chuyengia.hoChieu || "",
+        ghiChu: chuyengia.ghiChu || "",
+      };
+      setInitialFormValues(initialValues);
+      setInitialHoChieuBase64(chuyengia.anhHoChieu || "");
+
       form.setFieldsValue(chuyengia);
       if (chuyengia.chucDanh && !chucDanhOptions.includes(chuyengia.chucDanh)) {
         setCustomChucDanh(chuyengia.chucDanh);
@@ -72,7 +92,11 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
             url: chuyengia.anhHoChieu,
           },
         ]);
+      } else {
+        setFileList([]);
+        setHoChieuBase64("");
       }
+      setIsFormChanged(false); // Ban đầu không có thay đổi
     } else {
       form.resetFields();
       form.setFieldsValue({
@@ -95,10 +119,25 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       setSearchChucDanh("");
       setSearchQuocGia("");
       setSearchTruongDonVi("");
+      setInitialFormValues({});
+      setInitialHoChieuBase64("");
+      setIsFormChanged(false);
     }
   }, [chuyengia, form, chucDanhOptions, quocGiaOptions, truongDonViOptions]);
 
-  // Handle Select changes (aligned with StudentForm.jsx)
+  // Hàm kiểm tra thay đổi của form
+  const handleFieldsChange = () => {
+    if (!chuyengia) return; // Chỉ kiểm tra khi chỉnh sửa
+
+    const currentValues = form.getFieldsValue();
+    const hasFormChanged = Object.keys(initialFormValues).some(
+      (key) => currentValues[key] !== initialFormValues[key]
+    );
+    const hasImageChanged = hoChieuBase64 !== initialHoChieuBase64;
+
+    setIsFormChanged(hasFormChanged || hasImageChanged);
+  };
+
   const handleSelectChange = (field, value) => {
     if (field === "chucDanh") {
       if (value === "Khác") {
@@ -125,9 +164,9 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
         setCustomTruongDonVi("");
       }
     }
+    handleFieldsChange(); // Kiểm tra thay đổi sau khi select
   };
 
-  // Handle search input (aligned with StudentForm.jsx)
   const handleChucDanhSearch = (value) => {
     setSearchChucDanh(value);
     if (form.getFieldValue("chucDanh") === searchChucDanh || 
@@ -135,6 +174,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       form.setFieldValue("chucDanh", value);
       setCustomChucDanh(value);
     }
+    handleFieldsChange();
   };
 
   const handleQuocGiaSearch = (value) => {
@@ -144,6 +184,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       form.setFieldValue("quocGia", value);
       setCustomQuocGia(value);
     }
+    handleFieldsChange();
   };
 
   const handleTruongDonViSearch = (value) => {
@@ -153,11 +194,11 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       form.setFieldValue("truongDonVi", value);
       setCustomTruongDonVi(value);
     }
+    handleFieldsChange();
   };
 
-  // Custom filter function for Select (same as StudentForm.jsx)
   const filterOption = (input, option) => {
-    if (option.value === "Khác") return true; // Always show "Khác"
+    if (option.value === "Khác") return true;
     return option.children.toLowerCase().includes(input.toLowerCase());
   };
 
@@ -185,6 +226,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
               url: base64String,
             },
           ]);
+          handleFieldsChange(); // Kiểm tra thay đổi sau khi upload ảnh
         };
         reader.onerror = () => {
           message.error("Không thể đọc file ảnh");
@@ -197,6 +239,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
     } else {
       setHoChieuBase64("");
       setFileList([]);
+      handleFieldsChange();
     }
   };
 
@@ -248,6 +291,9 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       setSearchChucDanh("");
       setSearchQuocGia("");
       setSearchTruongDonVi("");
+      setIsFormChanged(false);
+      setInitialFormValues({});
+      setInitialHoChieuBase64("");
 
       onSuccess?.();
     } catch (error) {
@@ -276,6 +322,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       onFinish={onFinish}
       initialValues={chuyengia || {}}
       className="grid grid-cols-2 gap-4"
+      onValuesChange={handleFieldsChange} // Theo dõi thay đổi của form
     >
       <Form.Item label="Mã chuyên gia" name="maCG" className="col-span-1">
         <Input disabled className="bg-gray-100" />
@@ -432,7 +479,12 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       </Form.Item>
 
       <Form.Item className="col-span-2 flex justify-between">
-        <Button type="primary" htmlType="submit" loading={loading}>
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          disabled={chuyengia ? !isFormChanged : false} // Disable nút "Cập nhật" nếu không có thay đổi
+        >
           {chuyengia?.maCG ? "Cập nhật" : "Lưu"}
         </Button>
       </Form.Item>
