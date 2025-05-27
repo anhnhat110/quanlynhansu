@@ -218,7 +218,6 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         label="Ngày sinh"
         name="DOB"
         rules={[
-          { required: true, message: 'Vui lòng nhập ngày sinh' },
           { validator: validateDOB },
         ]}
       >
@@ -230,7 +229,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
         name="thoiGianBatDau"
         rules={[{ required: true, message: 'Vui lòng nhập thời gian bắt đầu' }]}
       >
-        <Input type="datetime-local" />
+        <Input type="date" />
       </Form.Item>
 
       <Form.Item
@@ -241,7 +240,7 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
           { validator: validateTimeRange },
         ]}
       >
-        <Input type="datetime-local" />
+        <Input type="date" />
       </Form.Item>
 
       <Form.Item
