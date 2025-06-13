@@ -1,53 +1,56 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Typography, message } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import { userService } from '../services/userService';
+import React, { useState } from "react";
+import { Form, Input, Button, Typography, message } from "antd";
+import { useNavigate } from "react-router-dom";
+import { userService } from "../services/userService";
 
-import logo from '../assets/images.png';
+import logo from "../assets/images.png";
 const { Title, Text } = Typography;
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
-  
+
   // Lấy toàn bộ URL của trang hiện tại
   const pathname = window.location.pathname;
-  console.log("Pathname:", pathname);  // Ví dụ: "/resetPassword/956a7ad1a42c7def62797b64ec06f6c8407d0305c761415703526c12487c94c2"
+  console.log("Pathname:", pathname); // Ví dụ: "/resetPassword/956a7ad1a42c7def62797b64ec06f6c8407d0305c761415703526c12487c94c2"
 
   // Tách phần token từ URL
-  const token = pathname.split('/')[2];  // Lấy phần thứ 3 trong đường dẫn (index 2)
-  console.log("Token:", token);  // Kết quả: "956a7ad1a42c7def62797b64ec06f6c8407d0305c761415703526c12487c94c2"
+  const token = pathname.split("/")[2]; // Lấy phần thứ 3 trong đường dẫn (index 2)
+  console.log("Token:", token); // Kết quả: "956a7ad1a42c7def62797b64ec06f6c8407d0305c761415703526c12487c94c2"
 
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values) => {
     const { password, passwordConfirm } = values;
-  
+
     if (!token) {
-      message.error('Token đặt lại mật khẩu không hợp lệ. Vui lòng sử dụng liên kết từ email của bạn.');
+      message.error(
+        "Token đặt lại mật khẩu không hợp lệ. Vui lòng sử dụng liên kết từ email của bạn."
+      );
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
+      console.log('Sending reset password request:', { token, password, passwordConfirm });
       await userService.resetPassword({ token, password, passwordConfirm });
       message.success({
-        content: 'Mật khẩu đã được đặt lại thành công! Đang chuyển hướng đến trang đăng nhập...',
+        content:
+          "Mật khẩu đã được đặt lại thành công! Đang chuyển hướng đến trang đăng nhập...",
         duration: 2,
-        onClose: () => navigate('/login'),
+        onClose: () => navigate("/login"),
       });
     } catch (error) {
       const errorMsg =
         error.response?.data?.message ||
         error.message ||
-        'Không thể đặt lại mật khẩu. Vui lòng thử lại.';
+        "Không thể đặt lại mật khẩu. Vui lòng thử lại.";
       message.error(errorMsg);
-      console.error('Lỗi đặt lại mật khẩu:', error);
+      console.error("Lỗi đặt lại mật khẩu:", error);
     } finally {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="flex h-screen bg-blue-50">
@@ -58,7 +61,7 @@ const ResetPasswordPage = () => {
           className="w-24 h-24 mb-6 rounded-full shadow-lg bg-white p-2"
         />
         <Title level={2} className="!text-white !mb-2">
-        HỆ THỐNG QUẢN LÝ THÔNG TIN CÁC CHUYÊN GIA NƯỚC NGOÀI
+          HỆ THỐNG QUẢN LÝ CÁC THÔNG TIN HỢP TÁC QUỐC TẾ
         </Title>
         <Text className="text-lg font-medium">
           Đại học Đà Nẵng - Trường Đại học Kinh Tế
@@ -66,44 +69,51 @@ const ResetPasswordPage = () => {
       </div>
       <div className="flex-1 bg-white flex justify-center items-center p-10 shadow-lg">
         <div className="w-full max-w-md">
-          <Title level={2} className="!text-center">Đặt lại mật khẩu</Title>
+          <Title level={2} className="!text-center">
+            Đặt lại mật khẩu
+          </Title>
           <Form name="reset_password" onFinish={onFinish} layout="vertical">
             <Form.Item
               label="Mật khẩu mới"
               name="password"
               rules={[
-                              { required: true, message: 'Hãy nhập mật khẩu mới!' },
-                              { min: 8, message: 'Mật khẩu mới phải có ít nhất 8 ký tự.' },
-                              {
-                                validator(_, value) {
-                                  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
-                                  if (value && !passwordRegex.test(value)) {
-                                    return Promise.reject(
-                                      new Error('Mật khẩu mới phải bao gồm chữ hoa, chữ thường và số.')
-                                    );
-                                  }
-                                  return Promise.resolve();
-                                },
-                              },
-                            ]}
-                          >
+                { required: true, message: "Hãy nhập mật khẩu mới!" },
+                { min: 8, message: "Mật khẩu mới phải có ít nhất 8 ký tự." },
+                {
+                  validator(_, value) {
+                    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/;
+                    if (value && !passwordRegex.test(value)) {
+                      return Promise.reject(
+                        new Error(
+                          "Mật khẩu mới phải bao gồm chữ hoa, chữ thường và số."
+                        )
+                      );
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
               <Input.Password placeholder="Mật khẩu mới" size="large" />
             </Form.Item>
             <Form.Item
               label="Xác nhận mật khẩu"
               name="passwordConfirm"
-              dependencies={['password']}
-              rules={[ 
-                { required: true, message: 'Vui lòng xác nhận mật khẩu!' }, 
+              dependencies={["password"]}
+              rules={[
+                { required: true, message: "Vui lòng xác nhận mật khẩu!" },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
-                    if (!value || getFieldValue('password') === value) {
+                    if (!value || getFieldValue("password") === value) {
                       return Promise.resolve();
                     }
-                    return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                    return Promise.reject(
+                      new Error("Mật khẩu xác nhận không khớp!")
+                    );
                   },
                 }),
-              ]}>
+              ]}
+            >
               <Input.Password placeholder="Xác nhận mật khẩu" size="large" />
             </Form.Item>
             <Form.Item>
@@ -112,15 +122,17 @@ const ResetPasswordPage = () => {
                 htmlType="submit"
                 className="w-full bg-blue-500 hover:bg-blue-600"
                 size="large"
-                loading={loading}>
+                loading={loading}
+              >
                 Đặt lại mật khẩu
               </Button>
             </Form.Item>
             <Text className="block text-center">
-              Quay lại{' '}
+              Quay lại{" "}
               <span
                 className="text-blue-500 cursor-pointer"
-                onClick={() => navigate('/login')}>
+                onClick={() => navigate("/login")}
+              >
                 Đăng nhập
               </span>
             </Text>
@@ -129,7 +141,6 @@ const ResetPasswordPage = () => {
       </div>
     </div>
   );
-  
 };
 
 export default ResetPasswordPage;
