@@ -308,6 +308,7 @@ const EventForm = ({ event, onSuccess }) => {
       validateOnMount={false}
       className="grid grid-cols-2 gap-2"
       onValuesChange={handleFieldsChange} 
+      size="small"// Theo dõi thay đổi của form
     >
       <Form.Item label="Mã sự kiện" name="maSK" className="col-span-1">
         <Input disabled className="bg-gray-100" />

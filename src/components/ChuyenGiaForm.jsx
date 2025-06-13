@@ -191,44 +191,46 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
   };
 
   const handleUploadChange = async ({ fileList: newFileList }) => {
-    setFileList(newFileList);
-    if (newFileList.length > 0) {
-      const file = newFileList[0].originFileObj;
-      try {
-        const options = {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1920,
-          useWebWorker: true,
-        };
-        const compressedFile = await imageCompression(file, options);
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64String = reader.result;
-          setHoChieuBase64(base64String);
-          setFileList([
-            {
-              uid: "-1",
-              name: file.name,
-              status: "done",
-              url: base64String,
-            },
-          ]);
-          handleFieldsChange();
-        };
-        reader.onerror = () => {
-          message.error("Không thể đọc file ảnh");
-        };
-        reader.readAsDataURL(compressedFile);
-      } catch (error) {
-        console.error("Lỗi khi nén ảnh:", error);
-        message.error("Không thể nén ảnh");
-      }
-    } else {
-      setHoChieuBase64("");
-      setFileList([]);
-      handleFieldsChange();
+  setFileList(newFileList);
+  if (newFileList.length > 0) {
+    const file = newFileList[0].originFileObj;
+    try {
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      const compressedFile = await imageCompression(file, options);
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result;
+        setHoChieuBase64(base64String);
+        setFileList([
+          {
+            uid: "-1",
+            name: file.name,
+            status: "done",
+            url: base64String,
+          },
+        ]);
+        setIsFormChanged(true); // Đánh dấu form đã thay đổi khi thêm ảnh
+        console.log("hoChieuBase64 updated:", base64String);
+      };
+      reader.onerror = () => {
+        message.error("Không thể đọc file ảnh");
+      };
+      reader.readAsDataURL(compressedFile);
+    } catch (error) {
+      console.error("Lỗi khi nén ảnh:", error);
+      message.error("Không thể nén ảnh");
     }
-  };
+  } else {
+    setHoChieuBase64("");
+    setFileList([]);
+    setIsFormChanged(true); // Đánh dấu form đã thay đổi khi xóa ảnh
+    console.log("hoChieuBase64 cleared");
+  }
+};
 
   const onFinish = async (values) => {
     try {
@@ -311,7 +313,7 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       layout="vertical"
       onFinish={onFinish}
       initialValues={chuyengia || {}}
-      className="grid grid-cols-2 gap-1 "
+      className="grid grid-cols-2 gap-2 "
       onValuesChange={handleFieldsChange}
       size="small"
     >
@@ -514,5 +516,4 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
     </Form>
   );
 };
-
 export default ChuyenGiaForm;

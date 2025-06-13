@@ -113,8 +113,8 @@
         title: 'Thời gian',
         key: 'thoiGian',
         render: (_, record) => {
-          const batDau = new Date(record.thoiGianBatDau).toLocaleString();
-          const ketThuc = new Date(record.thoiGianKetThuc).toLocaleString();
+          const batDau = new Date(record.thoiGianBatDau).toLocaleDateString();
+          const ketThuc = new Date(record.thoiGianKetThuc).toLocaleDateString();
           return `${batDau} - ${ketThuc}`;
         },
       },
