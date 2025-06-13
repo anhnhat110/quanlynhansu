@@ -77,7 +77,10 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       }
 
       // Xử lý giá trị tùy chỉnh cho truongDonVi
-      if (chuyengia.truongDonVi && !truongDonViOptions.includes(chuyengia.truongDonVi)) {
+      if (
+        chuyengia.truongDonVi &&
+        !truongDonViOptions.includes(chuyengia.truongDonVi)
+      ) {
         setCustomTruongDonVi(chuyengia.truongDonVi);
       } else {
         setCustomTruongDonVi("");
@@ -281,9 +284,16 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
       if (error.response?.status === 400 && error.response.data?.message) {
         const msg = error.response.data.message;
         if (msg.includes("Email đã tồn tại")) {
-          form.setFields([{ name: "email", errors: ["Email đã tồn tại, vui lòng nhập khác"] }]);
+          form.setFields([
+            { name: "email", errors: ["Email đã tồn tại, vui lòng nhập khác"] },
+          ]);
         } else if (msg.includes("Hộ chiếu đã tồn tại")) {
-          form.setFields([{ name: "hoChieu", errors: ["Hộ chiếu đã tồn tại, vui lòng nhập khác"] }]);
+          form.setFields([
+            {
+              name: "hoChieu",
+              errors: ["Hộ chiếu đã tồn tại, vui lòng nhập khác"],
+            },
+          ]);
         } else {
           message.error(msg || "Lỗi server khi lưu chuyên gia");
         }
@@ -296,181 +306,213 @@ const ChuyenGiaForm = ({ chuyengia, onSuccess }) => {
   };
 
   return (
-  <Form
-    form={form}
-    layout="vertical"
-    onFinish={onFinish}
-    initialValues={chuyengia || {}}
-    className="grid grid-cols-2 gap-0.5"
-    onValuesChange={handleFieldsChange}
-  >
-    <Form.Item label="Mã chuyên gia" name="maCG" style={{ marginBottom: '5px' }}>
-      <Input disabled className="bg-gray-100" />
-    </Form.Item>
-
-    <Form.Item
-      label="Họ và tên"
-      name="hoVaTen"
-      rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
-      style={{ marginBottom: '5px' }}
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={onFinish}
+      initialValues={chuyengia || {}}
+      className="grid grid-cols-2 gap-1 "
+      onValuesChange={handleFieldsChange}
+      size="small"
     >
-      <Input />
-    </Form.Item>
-
-    <Form.Item
-      label="Email"
-      name="email"
-      rules={[
-        { required: true, message: "Vui lòng nhập email" },
-        { type: "email", message: "Email không hợp lệ" },
-      ]}
-      style={{ marginBottom: '5px' }}
-    >
-      <Input />
-    </Form.Item>
-
-    <Form.Item
-      label="Giới tính"
-      name="gioiTinh"
-      rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
-      style={{ marginBottom: '5px' }}
-    >
-      <Select placeholder="Chọn giới tính">
-        <Option value="Nam">Nam</Option>
-        <Option value="Nữ">Nữ</Option>
-      </Select>
-    </Form.Item>
-
-    <Form.Item
-      label="Quốc gia"
-      name="quocGia"
-      rules={[{ required: true, message: "Vui lòng chọn hoặc nhập quốc gia" }]}
-      style={{ marginBottom: '5px' }}
-    >
-      <Select
-        showSearch
-        allowClear
-        onChange={(value) => handleSelectChange("quocGia", value)}
-        onSearch={handleQuocGiaSearch}
-        placeholder="Chọn hoặc nhập quốc gia"
-        filterOption={false}
-        value={customQuocGia || undefined}
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Mã chuyên gia</span>}
+        name="maCG"
+        style={{ marginBottom: "5px" }}
       >
-        {quocGiaOptions.map((item, idx) => (
-          <Option key={idx} value={item}>
-            {item}
-          </Option>
-        ))}
-        <Option value="Khác">Khác</Option>
-      </Select>
-    </Form.Item>
+        <Input disabled className="bg-gray-100" />
+      </Form.Item>
 
-    <Form.Item
-      label="Trường / Đơn vị"
-      name="truongDonVi"
-      rules={[{ required: true, message: "Vui lòng chọn hoặc nhập trường / đơn vị" }]}
-      style={{ marginBottom: '5px' }}
-    >
-      <Select
-        showSearch
-        allowClear
-        onChange={(value) => handleSelectChange("truongDonVi", value)}
-        onSearch={handleTruongDonViSearch}
-        placeholder="Chọn hoặc nhập trường / đơn vị"
-        filterOption={false}
-        value={customTruongDonVi || undefined}
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Họ và tên</span>}
+        name="hoVaTen"
+        rules={[{ required: true, message: "Vui lòng nhập họ và tên" }]}
+        style={{ marginBottom: "5px" }}
       >
-        {truongDonViOptions.map((ten, idx) => (
-          <Option key={idx} value={ten}>
-            {ten}
-          </Option>
-        ))}
-        <Option value="Khác">Khác</Option>
-      </Select>
-    </Form.Item>
+        <Input />
+      </Form.Item>
 
-    <Form.Item
-      label="Hộ chiếu"
-      name="hoChieu"
-      rules={[{ required: true, message: "Vui lòng nhập hộ chiếu" }]}
-      style={{ marginBottom: '5px' }}
-    >
-      <Input />
-    </Form.Item>
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Email</span>}
+        name="email"
+        rules={[
+          { required: true, message: "Vui lòng nhập email" },
+          { type: "email", message: "Email không hợp lệ" },
+        ]}
+        style={{ marginBottom: "5px" }}
+      >
+        <Input />
+      </Form.Item>
 
-    <Form.Item label="Ảnh hộ chiếu" name="anhHoChieu" style={{ marginBottom: '5px' }}>
-      <div>
-        {hoChieuBase64 && (
-          <img
-            src={hoChieuBase64}
-            alt="Ảnh hộ chiếu"
-            style={{ maxWidth: "100%", maxHeight: "150px", marginBottom: "5px" }}
-          />
-        )}
-        <Upload
-          listType="picture-card"
-          fileList={fileList}
-          onChange={handleUploadChange}
-          beforeUpload={() => false}
-          maxCount={1}
-          accept="image/*"
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Giới tính</span>}
+        name="gioiTinh"
+        rules={[{ required: true, message: "Vui lòng chọn giới tính" }]}
+        style={{ marginBottom: "5px" }}
+      >
+        <Select placeholder="Chọn giới tính">
+          <Option value="Nam">Nam</Option>
+          <Option value="Nữ">Nữ</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Quốc gia</span>}
+        name="quocGia"
+        rules={[
+          { required: true, message: "Vui lòng chọn hoặc nhập quốc gia" },
+        ]}
+        style={{ marginBottom: "5px" }}
+      >
+        <Select
+          showSearch
+          allowClear
+          onChange={(value) => handleSelectChange("quocGia", value)}
+          onSearch={handleQuocGiaSearch}
+          placeholder="Chọn hoặc nhập quốc gia"
+          filterOption={false}
+          value={customQuocGia || undefined}
         >
-          <div>
-            <PlusOutlined />
-            <div style={{ marginTop: 4 }}>Tải ảnh</div>
-          </div>
-        </Upload>
-      </div>
-    </Form.Item>
+          {quocGiaOptions.map((item, idx) => (
+            <Option key={idx} value={item}>
+              {item}
+            </Option>
+          ))}
+          <Option value="Khác">Khác</Option>
+        </Select>
+      </Form.Item>
 
-    <Form.Item
-      label="Chức danh"
-      name="chucDanh"
-      rules={[{ required: true, message: "Vui lòng chọn hoặc nhập chức danh" }]}
-      style={{ marginBottom: '5px' }}
-    >
-      <Select
-        showSearch
-        allowClear
-        onChange={(value) => handleSelectChange("chucDanh", value)}
-        onSearch={handleChucDanhSearch}
-        placeholder="Chọn hoặc nhập chức danh"
-        filterOption={false}
-        value={customChucDanh || undefined}
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Trường / Đơn vị</span>}
+        name="truongDonVi"
+        rules={[
+          {
+            required: true,
+            message: "Vui lòng chọn hoặc nhập trường / đơn vị",
+          },
+        ]}
+        style={{ marginBottom: "5px" }}
       >
-        {chucDanhOptions.map((item, idx) => (
-          <Option key={idx} value={item}>
-            {item}
-          </Option>
-        ))}
-        <Option value="Khác">Khác</Option>
-      </Select>
-    </Form.Item>
+        <Select
+          showSearch
+          allowClear
+          onChange={(value) => handleSelectChange("truongDonVi", value)}
+          onSearch={handleTruongDonViSearch}
+          placeholder="Chọn hoặc nhập trường / đơn vị"
+          filterOption={false}
+          value={customTruongDonVi || undefined}
+        >
+          {truongDonViOptions.map((ten, idx) => (
+            <Option key={idx} value={ten}>
+              {ten}
+            </Option>
+          ))}
+          <Option value="Khác">Khác</Option>
+        </Select>
+      </Form.Item>
 
-    <Form.Item label="Chức vụ" name="chucVu" style={{ marginBottom: '5px' }}>
-      <Input />
-    </Form.Item>
-
-    <Form.Item label="Chuyên ngành" name="chuyenNganh" style={{ marginBottom: '5px' }}>
-      <Input />
-    </Form.Item>
-
-    <Form.Item label="Ghi chú" name="ghiChu" className="col-span-2" style={{ marginBottom: '5px' }}>
-      <Input.TextArea rows={2} />
-    </Form.Item>
-
-    <Form.Item className="col-span-2 flex justify-between">
-      <Button
-        type="primary"
-        htmlType="submit"
-        loading={loading}
-        disabled={chuyengia ? !isFormChanged : false}
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Hộ chiếu</span>}
+        name="hoChieu"
+        rules={[{ required: true, message: "Vui lòng nhập hộ chiếu" }]}
+        style={{ marginBottom: "5px" }}
       >
-        {chuyengia?.maCG ? "Cập nhật" : "Lưu"}
-      </Button>
-    </Form.Item>
-  </Form>
-);
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Ảnh hộ chiếu</span>}
+        name="anhHoChieu"
+        style={{ marginBottom: "5px" }}
+      >
+        <div>
+          {hoChieuBase64 && (
+            <img
+              src={hoChieuBase64}
+              alt="Ảnh hộ chiếu"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "150px",
+                marginBottom: "5px",
+              }}
+            />
+          )}
+          <Upload
+            listType="picture-card"
+            fileList={fileList}
+            onChange={handleUploadChange}
+            beforeUpload={() => false}
+            maxCount={1}
+            accept="image/*"
+          >
+            <div>
+              <PlusOutlined />
+              <div style={{ marginTop: 4 }}>Tải ảnh</div>
+            </div>
+          </Upload>
+        </div>
+      </Form.Item>
+
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Chức danh</span>}
+        name="chucDanh"
+        rules={[
+          { required: true, message: "Vui lòng chọn hoặc nhập chức danh" },
+        ]}
+        style={{ marginBottom: "5px" }}
+      >
+        <Select
+          showSearch
+          allowClear
+          onChange={(value) => handleSelectChange("chucDanh", value)}
+          onSearch={handleChucDanhSearch}
+          placeholder="Chọn hoặc nhập chức danh"
+          filterOption={false}
+          value={customChucDanh || undefined}
+        >
+          {chucDanhOptions.map((item, idx) => (
+            <Option key={idx} value={item}>
+              {item}
+            </Option>
+          ))}
+          <Option value="Khác">Khác</Option>
+        </Select>
+      </Form.Item>
+
+      <Form.Item label={<span style={{ fontSize: 13 }}>Chức vụ</span>} name="chucVu" style={{ marginBottom: "5px" }}>
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Chuyên ngành</span>}
+        name="chuyenNganh"
+        style={{ marginBottom: "5px" }}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        label={<span style={{ fontSize: 13 }}>Ghi chú</span>}
+        name="ghiChu"
+        className="col-span-2"
+        style={{ marginBottom: "5px" }}
+      >
+        <Input.TextArea rows={2} />
+      </Form.Item>
+
+      <Form.Item className="col-span-2 flex justify-between">
+        <Button
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          disabled={chuyengia ? !isFormChanged : false}
+          size=""
+        >
+          {chuyengia?.maCG ? "Cập nhật" : "Lưu"}
+        </Button>
+      </Form.Item>
+    </Form>
+  );
 };
 
 export default ChuyenGiaForm;

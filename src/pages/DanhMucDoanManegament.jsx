@@ -208,6 +208,7 @@ const DanhMucDoanManagement = () => {
           setIsModalVisible(false);
           setEditingDoan(null);
         }}
+        style={{ top: 20 }}
         footer={null}
         width={800}
       >

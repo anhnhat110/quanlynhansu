@@ -219,6 +219,7 @@
             setIsModalVisible(false);
             setEditingEvent(null);
           }}
+          style={{ top: 20 }}
           footer={null}
           width={1000}
         >

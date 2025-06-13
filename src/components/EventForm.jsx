@@ -306,8 +306,8 @@ const EventForm = ({ event, onSuccess }) => {
       onFinish={onFinish}
       validateTrigger={["onFinish"]}
       validateOnMount={false}
-      className="grid grid-cols-2 gap-4"
-      onValuesChange={handleFieldsChange} // Theo dõi thay đổi của form
+      className="grid grid-cols-2 gap-2"
+      onValuesChange={handleFieldsChange} 
     >
       <Form.Item label="Mã sự kiện" name="maSK" className="col-span-1">
         <Input disabled className="bg-gray-100" />
@@ -426,7 +426,8 @@ const EventForm = ({ event, onSuccess }) => {
           type="primary"
           htmlType="submit"
           loading={loading}
-          disabled={event ? !isFormChanged : false} // Disable nút "Cập nhật" nếu không có thay đổi
+          disabled={event ? !isFormChanged : false}
+          size="" // Disable nút "Cập nhật" nếu không có thay đổi
         >
           {event?._id ? "Cập nhật" : "Lưu"}
         </Button>

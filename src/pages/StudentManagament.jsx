@@ -218,6 +218,7 @@ const StudentManagement = () => {
           setEditingStudent(null);
         }}
         footer={null}
+        style={{ top: 20 }}
         width={800}
       >
         <StudentForm

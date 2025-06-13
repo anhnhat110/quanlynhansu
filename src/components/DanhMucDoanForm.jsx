@@ -11,10 +11,10 @@ const DanhMucDoanForm = ({ doan, onSuccess }) => {
   useEffect(() => {
     if (doan) {
       const thoiGianBatDau = doan.thoiGianBatDau
-        ? new Date(doan.thoiGianBatDau).toISOString().slice(0, 16)
+        ? new Date(doan.thoiGianBatDau).toISOString().split('T')[0] // Định dạng YYYY-MM-DD
         : undefined;
       const thoiGianKetThuc = doan.thoiGianKetThuc
-        ? new Date(doan.thoiGianKetThuc).toISOString().slice(0, 16)
+        ? new Date(doan.thoiGianKetThuc).toISOString().split('T')[0] // Định dạng YYYY-MM-DD
         : undefined;
       const DOB = doan.DOB ? new Date(doan.DOB).toISOString().split('T')[0] : undefined;
 

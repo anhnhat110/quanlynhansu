@@ -208,6 +208,8 @@ const ChuyenGiaManagement = () => {
         }}
         footer={null}
         width={1000}
+        style={{ top: 20 }}
+        
       >
         <ChuyenGiaForm
           chuyengia={editingChuyenGia}
