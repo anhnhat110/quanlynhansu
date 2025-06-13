@@ -18,11 +18,11 @@ const EventDetailModal = ({ event, visible, onCancel }) => {
         bordered
         column={1}
         labelStyle={{ width: '200px', fontWeight: 'bold' }}
-        contentStyle={{ width: 'auto' }}
+        contentStyle={{ width: 'auto', }}
       >
         <Descriptions.Item label="Mã sự kiện">{event.maSK || '—'}</Descriptions.Item>
         <Descriptions.Item label="Chuyên gia">
-          {guide ? `${guide.hoVaTen} (${guide.maCG || '—'})` : '—'}
+          {guide ? `${guide.hoVaTen} (${guide.maCG || '—'})` : 'Không'}
         </Descriptions.Item>
         <Descriptions.Item label="Mục đích">{event.mucDich || '—'}</Descriptions.Item>
         <Descriptions.Item label="Sự kiện">{event.suKien || '—'}</Descriptions.Item>
@@ -34,7 +34,7 @@ const EventDetailModal = ({ event, visible, onCancel }) => {
         </Descriptions.Item>
         <Descriptions.Item label="Địa điểm">{event.diaDiem || '—'}</Descriptions.Item>
         <Descriptions.Item label="Thành phần">{event.thanhPhan || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Ghi chú">{event.ghiChu || '—'}</Descriptions.Item>
+        <Descriptions.Item label="Ghi chú">{event.ghiChu || 'Không'}</Descriptions.Item>
       </Descriptions>
     </Modal>
   );

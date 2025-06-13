@@ -32,7 +32,7 @@ const DanhMucDoanDetailModal = ({ doan, visible, onCancel }) => {
           {doan.thoiGianKetThuc ? new Date(doan.thoiGianKetThuc).toLocaleDateString('vi-VN') : '—'}
         </Descriptions.Item>
         <Descriptions.Item label="Nội dung">{doan.noiDung || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Ghi chú">{doan.ghiChu || '—'}</Descriptions.Item>
+        <Descriptions.Item label="Ghi chú">{doan.ghiChu || 'Không có ghi chú'}</Descriptions.Item>
       </Descriptions>
     </Modal>
   );

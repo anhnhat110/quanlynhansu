@@ -39,8 +39,8 @@ const ChuyenGiaDetailModal = ({ chuyenGia, visible, onCancel }) => {
         <Descriptions.Item label="Trường / Đơn vị">{chuyenGia.truongDonVi || '—'}</Descriptions.Item>
         <Descriptions.Item label="Chức danh">{chuyenGia.chucDanh || '—'}</Descriptions.Item>
         <Descriptions.Item label="Chức vụ">{chuyenGia.chucVu || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Chuyên ngành">{chuyenGia.chuyenNganh || '—'}</Descriptions.Item>
-        <Descriptions.Item label="Ghi chú">{chuyenGia.ghiChu || '—'}</Descriptions.Item>
+        <Descriptions.Item label="Chuyên ngành">{chuyenGia.chuyenNganh || 'Không'}</Descriptions.Item>
+        <Descriptions.Item label="Ghi chú">{chuyenGia.ghiChu || 'Không'}</Descriptions.Item>
       </Descriptions>
     </Modal>
   );
