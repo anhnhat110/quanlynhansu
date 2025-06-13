@@ -109,6 +109,7 @@ const DanhMucDoanManagement = () => {
           : '—';
         return `${batDau} - ${ketThuc}`;
       },
+      width: 200,
     },
     {
       title: 'Nội dung',
